@@ -1,0 +1,716 @@
+▲ Next.js 16.2.2 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 16 errors:
+./node_modules/@babel/runtime/regenerator/index.js:3:15
+Module not found: Can't resolve '../helpers/regeneratorRuntime'
+  [90m1 |[0m [90m// TODO(Babel 8): Remove this file.[0m
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mvar[0m runtime = require([32m"../helpers/regeneratorRuntime"[0m)();
+  [90m  |[0m               [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m module.exports = runtime;
+  [90m5 |[0m
+  [90m6 |[0m [90m// Copied from https://github.com/facebook/regenerator/blob/main/packages/runtime/runtime.j...[0m
+
+
+
+Import traces:
+  Client Component Browser:
+    ./node_modules/@babel/runtime/regenerator/index.js [Client Component Browser]
+    ./node_modules/next-auth/react/index.js [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./node_modules/@babel/runtime/regenerator/index.js [Client Component SSR]
+    ./node_modules/next-auth/react/index.js [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+  App Route:
+    ./node_modules/@babel/runtime/regenerator/index.js
+    ./node_modules/next-auth/utils/logger.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/api/conversations/[id]/route.ts
+
+  Server Component:
+    ./node_modules/@babel/runtime/regenerator/index.js
+    ./node_modules/next-auth/utils/logger.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/admin/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/jose/dist/node/cjs/lib/cek.js:5:21
+Module not found: Can't resolve '../runtime/random.js'
+  [90m3 |[0m exports.bitLength = [36mvoid[0m [35m0[0m;
+  [90m4 |[0m [36mconst[0m errors_js_1 = require([32m"../util/errors.js"[0m);
+[31m[1m>[0m [90m5 |[0m [36mconst[0m random_js_1 = require([32m"../runtime/random.js"[0m);
+  [90m  |[0m                     [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m [36mfunction[0m bitLength(alg) {
+  [90m7 |[0m     [36mswitch[0m (alg) {
+  [90m8 |[0m         [36mcase[0m [32m'A128GCM'[0m:
+
+
+
+Import traces:
+  Middleware:
+    ./node_modules/jose/dist/node/cjs/lib/cek.js
+    ./node_modules/jose/dist/node/cjs/jwe/general/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/next/middleware.js
+    ./node_modules/next-auth/middleware.js
+    ./proxy.ts
+
+  App Route:
+    ./node_modules/jose/dist/node/cjs/lib/cek.js
+    ./node_modules/jose/dist/node/cjs/jwe/general/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./app/api/auth/register/route.ts
+
+  Server Component:
+    ./node_modules/jose/dist/node/cjs/lib/cek.js
+    ./node_modules/jose/dist/node/cjs/jwe/general/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/(main)/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/jose/dist/node/cjs/lib/iv.js:5:21
+Module not found: Can't resolve '../runtime/random.js'
+  [90m3 |[0m exports.bitLength = [36mvoid[0m [35m0[0m;
+  [90m4 |[0m [36mconst[0m errors_js_1 = require([32m"../util/errors.js"[0m);
+[31m[1m>[0m [90m5 |[0m [36mconst[0m random_js_1 = require([32m"../runtime/random.js"[0m);
+  [90m  |[0m                     [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m [36mfunction[0m bitLength(alg) {
+  [90m7 |[0m     [36mswitch[0m (alg) {
+  [90m8 |[0m         [36mcase[0m [32m'A128GCM'[0m:
+
+
+
+Import traces:
+  Middleware:
+    ./node_modules/jose/dist/node/cjs/lib/iv.js
+    ./node_modules/jose/dist/node/cjs/lib/aesgcmkw.js
+    ./node_modules/jose/dist/node/cjs/lib/encrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/general/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/next/middleware.js
+    ./node_modules/next-auth/middleware.js
+    ./proxy.ts
+
+  App Route:
+    ./node_modules/jose/dist/node/cjs/lib/iv.js
+    ./node_modules/jose/dist/node/cjs/lib/aesgcmkw.js
+    ./node_modules/jose/dist/node/cjs/lib/encrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/general/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./app/api/auth/register/route.ts
+
+  Server Component:
+    ./node_modules/jose/dist/node/cjs/lib/iv.js
+    ./node_modules/jose/dist/node/cjs/lib/aesgcmkw.js
+    ./node_modules/jose/dist/node/cjs/lib/encrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/general/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/admin/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/jose/dist/node/cjs/lib/decrypt_key_management.js:6:20
+Module not found: Can't resolve '../runtime/rsaes.js'
+  [90m4 |[0m [36mconst[0m [33mECDH[0m = require([32m"../runtime/ecdhes.js"[0m);
+  [90m5 |[0m [36mconst[0m pbes2kw_js_1 = require([32m"../runtime/pbes2kw.js"[0m);
+[31m[1m>[0m [90m6 |[0m [36mconst[0m rsaes_js_1 = require([32m"../runtime/rsaes.js"[0m);
+  [90m  |[0m                    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mconst[0m base64url_js_1 = require([32m"../runtime/base64url.js"[0m);
+  [90m8 |[0m [36mconst[0m errors_js_1 = require([32m"../util/errors.js"[0m);
+  [90m9 |[0m [36mconst[0m cek_js_1 = require([32m"../lib/cek.js"[0m);
+
+
+
+Import traces:
+  Middleware:
+    ./node_modules/jose/dist/node/cjs/lib/decrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/flattened/decrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/next/middleware.js
+    ./node_modules/next-auth/middleware.js
+    ./proxy.ts
+
+  App Route:
+    ./node_modules/jose/dist/node/cjs/lib/decrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/flattened/decrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./app/api/auth/register/route.ts
+
+  Server Component:
+    ./node_modules/jose/dist/node/cjs/lib/decrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/flattened/decrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/admin/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/jose/dist/node/cjs/lib/encrypt_key_management.js:6:20
+Module not found: Can't resolve '../runtime/rsaes.js'
+  [90m4 |[0m [36mconst[0m [33mECDH[0m = require([32m"../runtime/ecdhes.js"[0m);
+  [90m5 |[0m [36mconst[0m pbes2kw_js_1 = require([32m"../runtime/pbes2kw.js"[0m);
+[31m[1m>[0m [90m6 |[0m [36mconst[0m rsaes_js_1 = require([32m"../runtime/rsaes.js"[0m);
+  [90m  |[0m                    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mconst[0m base64url_js_1 = require([32m"../runtime/base64url.js"[0m);
+  [90m8 |[0m [36mconst[0m cek_js_1 = require([32m"../lib/cek.js"[0m);
+  [90m9 |[0m [36mconst[0m errors_js_1 = require([32m"../util/errors.js"[0m);
+
+
+
+Import traces:
+  Middleware:
+    ./node_modules/jose/dist/node/cjs/lib/encrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/flattened/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/next/middleware.js
+    ./node_modules/next-auth/middleware.js
+    ./proxy.ts
+
+  App Route:
+    ./node_modules/jose/dist/node/cjs/lib/encrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/flattened/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./app/api/auth/register/route.ts
+
+  Server Component:
+    ./node_modules/jose/dist/node/cjs/lib/encrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/flattened/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/admin/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/@babel/runtime/helpers/wrapNativeSuper.js:3:24
+Module not found: Can't resolve './isNativeFunction.js'
+  [90m1 |[0m [36mvar[0m getPrototypeOf = require([32m"./getPrototypeOf.js"[0m);
+  [90m2 |[0m [36mvar[0m setPrototypeOf = require([32m"./setPrototypeOf.js"[0m);
+[31m[1m>[0m [90m3 |[0m [36mvar[0m isNativeFunction = require([32m"./isNativeFunction.js"[0m);
+  [90m  |[0m                        [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mvar[0m construct = require([32m"./construct.js"[0m);
+  [90m5 |[0m [36mfunction[0m _wrapNativeSuper(t) {
+  [90m6 |[0m   [36mvar[0m r = [32m"function"[0m == [36mtypeof[0m [33mMap[0m ? [36mnew[0m [33mMap[0m() : [36mvoid[0m [35m0[0m;
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/@babel/runtime/helpers/wrapNativeSuper.js
+    ./node_modules/next-auth/core/errors.js
+    ./node_modules/next-auth/core/lib/assert.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./app/api/auth/register/route.ts
+
+  Client Component Browser:
+    ./node_modules/@babel/runtime/helpers/wrapNativeSuper.js [Client Component Browser]
+    ./node_modules/next-auth/core/errors.js [Client Component Browser]
+    ./node_modules/next-auth/utils/logger.js [Client Component Browser]
+    ./node_modules/next-auth/react/index.js [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./node_modules/@babel/runtime/helpers/wrapNativeSuper.js [Client Component SSR]
+    ./node_modules/next-auth/core/errors.js [Client Component SSR]
+    ./node_modules/next-auth/utils/logger.js [Client Component SSR]
+    ./node_modules/next-auth/react/index.js [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+  Server Component:
+    ./node_modules/@babel/runtime/helpers/wrapNativeSuper.js
+    ./node_modules/next-auth/core/errors.js
+    ./node_modules/next-auth/core/lib/assert.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/admin/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/@babel/runtime/helpers/construct.js:1:32
+Module not found: Can't resolve './isNativeReflectConstruct.js'
+[31m[1m>[0m [90m1 |[0m [36mvar[0m isNativeReflectConstruct = require([32m"./isNativeReflectConstruct.js"[0m);
+  [90m  |[0m                                [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m [36mvar[0m setPrototypeOf = require([32m"./setPrototypeOf.js"[0m);
+  [90m3 |[0m [36mfunction[0m _construct(t, e, r) {
+  [90m4 |[0m   [36mif[0m (isNativeReflectConstruct()) [36mreturn[0m [33mReflect[0m.construct.apply([36mnull[0m, arguments);
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/@babel/runtime/helpers/construct.js
+    ./node_modules/@babel/runtime/helpers/wrapNativeSuper.js
+    ./node_modules/next-auth/core/errors.js
+    ./node_modules/next-auth/core/lib/assert.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./app/api/auth/register/route.ts
+
+  Client Component Browser:
+    ./node_modules/@babel/runtime/helpers/construct.js [Client Component Browser]
+    ./node_modules/@babel/runtime/helpers/wrapNativeSuper.js [Client Component Browser]
+    ./node_modules/next-auth/core/errors.js [Client Component Browser]
+    ./node_modules/next-auth/utils/logger.js [Client Component Browser]
+    ./node_modules/next-auth/react/index.js [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./node_modules/@babel/runtime/helpers/construct.js [Client Component SSR]
+    ./node_modules/@babel/runtime/helpers/wrapNativeSuper.js [Client Component SSR]
+    ./node_modules/next-auth/core/errors.js [Client Component SSR]
+    ./node_modules/next-auth/utils/logger.js [Client Component SSR]
+    ./node_modules/next-auth/react/index.js [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+  Server Component:
+    ./node_modules/@babel/runtime/helpers/construct.js
+    ./node_modules/@babel/runtime/helpers/wrapNativeSuper.js
+    ./node_modules/next-auth/core/errors.js
+    ./node_modules/next-auth/core/lib/assert.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/admin/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/@babel/runtime/helpers/slicedToArray.js:2:28
+Module not found: Can't resolve './iterableToArrayLimit.js'
+  [90m1 |[0m [36mvar[0m arrayWithHoles = require([32m"./arrayWithHoles.js"[0m);
+[31m[1m>[0m [90m2 |[0m [36mvar[0m iterableToArrayLimit = require([32m"./iterableToArrayLimit.js"[0m);
+  [90m  |[0m                            [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m3 |[0m [36mvar[0m unsupportedIterableToArray = require([32m"./unsupportedIterableToArray.js"[0m);
+  [90m4 |[0m [36mvar[0m nonIterableRest = require([32m"./nonIterableRest.js"[0m);
+  [90m5 |[0m [36mfunction[0m _slicedToArray(r, e) {
+
+
+
+Import traces:
+  Client Component Browser:
+    ./node_modules/@babel/runtime/helpers/slicedToArray.js [Client Component Browser]
+    ./node_modules/next-auth/react/index.js [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./node_modules/@babel/runtime/helpers/slicedToArray.js [Client Component SSR]
+    ./node_modules/next-auth/react/index.js [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/jose/dist/node/cjs/index.js:43:19
+Module not found: Can't resolve './jwks/remote.js'
+  [90m41 |[0m [36mvar[0m local_js_1 = require([32m"./jwks/local.js"[0m);
+  [90m42 |[0m [33mObject[0m.defineProperty(exports, [32m"createLocalJWKSet"[0m, { enumerable: [36mtrue[0m, get: [36mfunction[0m () {.[36m..[0m
+[31m[1m>[0m [90m43 |[0m [36mvar[0m remote_js_1 = require([32m"./jwks/remote.js"[0m);
+  [90m   |[0m                   [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m44 |[0m [33mObject[0m.defineProperty(exports, [32m"createRemoteJWKSet"[0m, { enumerable: [36mtrue[0m, get: [36mfunction[0m () ..[36m.[0m
+  [90m45 |[0m [36mvar[0m unsecured_js_1 = require([32m"./jwt/unsecured.js"[0m);
+  [90m46 |[0m [33mObject[0m.defineProperty(exports, [32m"UnsecuredJWT"[0m, { enumerable: [36mtrue[0m, get: [36mfunction[0m () { [36mretu..[0m.
+
+
+
+Import traces:
+  Middleware:
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/next/middleware.js
+    ./node_modules/next-auth/middleware.js
+    ./proxy.ts
+
+  App Route:
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./app/api/auth/register/route.ts
+
+  Server Component:
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/(main)/chat/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/@babel/runtime/helpers/slicedToArray.js:4:23
+Module not found: Can't resolve './nonIterableRest.js'
+  [90m2 |[0m [36mvar[0m iterableToArrayLimit = require([32m"./iterableToArrayLimit.js"[0m);
+  [90m3 |[0m [36mvar[0m unsupportedIterableToArray = require([32m"./unsupportedIterableToArray.js"[0m);
+[31m[1m>[0m [90m4 |[0m [36mvar[0m nonIterableRest = require([32m"./nonIterableRest.js"[0m);
+  [90m  |[0m                       [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mfunction[0m _slicedToArray(r, e) {
+  [90m6 |[0m   [36mreturn[0m arrayWithHoles(r) || iterableToArrayLimit(r, e) || unsupportedIterableToArray(r, e...
+  [90m7 |[0m }
+
+
+
+Import traces:
+  Client Component Browser:
+    ./node_modules/@babel/runtime/helpers/slicedToArray.js [Client Component Browser]
+    ./node_modules/next-auth/react/index.js [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./node_modules/@babel/runtime/helpers/slicedToArray.js [Client Component SSR]
+    ./node_modules/next-auth/react/index.js [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/jose/dist/node/cjs/runtime/generate.js:6:21
+Module not found: Can't resolve './random.js'
+  [90m4 |[0m [36mconst[0m crypto_1 = require([32m"crypto"[0m);
+  [90m5 |[0m [36mconst[0m util_1 = require([32m"util"[0m);
+[31m[1m>[0m [90m6 |[0m [36mconst[0m random_js_1 = require([32m"./random.js"[0m);
+  [90m  |[0m                     [31m[1m^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mconst[0m check_modulus_length_js_1 = require([32m"./check_modulus_length.js"[0m);
+  [90m8 |[0m [36mconst[0m errors_js_1 = require([32m"../util/errors.js"[0m);
+  [90m9 |[0m [36mconst[0m generate = ([35m0[0m, util_1.promisify)(crypto_1.generateKeyPair);
+
+
+
+Import traces:
+  Middleware:
+    ./node_modules/jose/dist/node/cjs/runtime/generate.js
+    ./node_modules/jose/dist/node/cjs/key/generate_secret.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/next/middleware.js
+    ./node_modules/next-auth/middleware.js
+    ./proxy.ts
+
+  App Route:
+    ./node_modules/jose/dist/node/cjs/runtime/generate.js
+    ./node_modules/jose/dist/node/cjs/key/generate_secret.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./app/api/auth/register/route.ts
+
+  Server Component:
+    ./node_modules/jose/dist/node/cjs/runtime/generate.js
+    ./node_modules/jose/dist/node/cjs/key/generate_secret.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/(main)/chat/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/jose/dist/node/cjs/runtime/pbes2kw.js:6:21
+Module not found: Can't resolve './random.js'
+  [90m4 |[0m [36mconst[0m util_1 = require([32m"util"[0m);
+  [90m5 |[0m [36mconst[0m crypto_1 = require([32m"crypto"[0m);
+[31m[1m>[0m [90m6 |[0m [36mconst[0m random_js_1 = require([32m"./random.js"[0m);
+  [90m  |[0m                     [31m[1m^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mconst[0m buffer_utils_js_1 = require([32m"../lib/buffer_utils.js"[0m);
+  [90m8 |[0m [36mconst[0m base64url_js_1 = require([32m"./base64url.js"[0m);
+  [90m9 |[0m [36mconst[0m aeskw_js_1 = require([32m"./aeskw.js"[0m);
+
+
+
+Import traces:
+  Middleware:
+    ./node_modules/jose/dist/node/cjs/runtime/pbes2kw.js
+    ./node_modules/jose/dist/node/cjs/lib/encrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/flattened/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/next/middleware.js
+    ./node_modules/next-auth/middleware.js
+    ./proxy.ts
+
+  App Route:
+    ./node_modules/jose/dist/node/cjs/runtime/pbes2kw.js
+    ./node_modules/jose/dist/node/cjs/lib/encrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/flattened/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./app/api/auth/register/route.ts
+
+  Server Component:
+    ./node_modules/jose/dist/node/cjs/runtime/pbes2kw.js
+    ./node_modules/jose/dist/node/cjs/lib/encrypt_key_management.js
+    ./node_modules/jose/dist/node/cjs/jwe/flattened/encrypt.js
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/admin/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/jose/dist/node/cjs/index.js:66:20
+Module not found: Can't resolve './util/runtime.js'
+  [90m64 |[0m [33mObject[0m.defineProperty(exports, [32m"generateSecret"[0m, { enumerable: [36mtrue[0m, get: [36mfunction[0m () { [36mre...[0m
+  [90m65 |[0m exports.base64url = require([32m"./util/base64url.js"[0m);
+[31m[1m>[0m [90m66 |[0m [36mvar[0m runtime_js_1 = require([32m"./util/runtime.js"[0m);
+  [90m   |[0m                    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m67 |[0m [33mObject[0m.defineProperty(exports, [32m"cryptoRuntime"[0m, { enumerable: [36mtrue[0m, get: [36mfunction[0m () { [36mret...[0m
+  [90m68 |[0m
+
+
+
+Import traces:
+  Middleware:
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/next/middleware.js
+    ./node_modules/next-auth/middleware.js
+    ./proxy.ts
+
+  App Route:
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./app/api/auth/register/route.ts
+
+  Server Component:
+    ./node_modules/jose/dist/node/cjs/index.js
+    ./node_modules/next-auth/jwt/index.js
+    ./node_modules/next-auth/core/init.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/(main)/chat/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/next-auth/core/errors.js:17:58
+Module not found: Can't resolve '@babel/runtime/helpers/possibleConstructorReturn'
+  [90m15 |[0m ...lt(require([32m"@babel/runtime/helpers/classCallCheck"[0m));
+  [90m16 |[0m ...require([32m"@babel/runtime/helpers/createClass"[0m));
+[31m[1m>[0m [90m17 |[0m ...equireDefault(require([32m"@babel/runtime/helpers/possibleConstructorReturn"[0m));
+  [90m   |[0m                  [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m18 |[0m ...lt(require([32m"@babel/runtime/helpers/getPrototypeOf"[0m));
+  [90m19 |[0m ...uire([32m"@babel/runtime/helpers/inherits"[0m));
+  [90m20 |[0m ...ult(require([32m"@babel/runtime/helpers/wrapNativeSuper"[0m));
+
+
+
+Import traces:
+  App Route:
+    ./node_modules/next-auth/core/errors.js
+    ./node_modules/next-auth/core/lib/assert.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./app/api/auth/register/route.ts
+
+  Client Component Browser:
+    ./node_modules/next-auth/core/errors.js [Client Component Browser]
+    ./node_modules/next-auth/utils/logger.js [Client Component Browser]
+    ./node_modules/next-auth/react/index.js [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Client Component Browser]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./node_modules/next-auth/core/errors.js [Client Component SSR]
+    ./node_modules/next-auth/utils/logger.js [Client Component SSR]
+    ./node_modules/next-auth/react/index.js [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Client Component SSR]
+    ./app/(auth)/login/page.tsx [Server Component]
+
+  Server Component:
+    ./node_modules/next-auth/core/errors.js
+    ./node_modules/next-auth/core/lib/assert.js
+    ./node_modules/next-auth/core/index.js
+    ./node_modules/next-auth/next/index.js
+    ./node_modules/next-auth/index.js
+    ./app/admin/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./app/page.tsx:5:1
+Export Github doesn't exist in target module
+  [90m 3 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+  [90m 4 |[0m [36mimport[0m { motion } [36mfrom[0m [32m'framer-motion'[0m;
+[31m[1m>[0m [90m 5 |[0m [36mimport[0m { 
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   [33mBot[0m, 
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   [33mShieldCheck[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   [33mHistory[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   [33mEye[0m, 
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   [33mZap[0m, 
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m   [33mChevronRight[0m,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m12 |[0m   [33mGithub[0m
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m13 |[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m14 |[0m
+  [90m15 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mLandingPage[0m() {
+  [90m16 |[0m   [36mreturn[0m (
+
+The export Github was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-client] (ecmascript).
+Did you mean to import Gift?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component]
+
+
+./app/page.tsx:5:1
+Export Github doesn't exist in target module
+  [90m 3 |[0m [36mimport[0m [33mLink[0m [36mfrom[0m [32m'next/link'[0m;
+  [90m 4 |[0m [36mimport[0m { motion } [36mfrom[0m [32m'framer-motion'[0m;
+[31m[1m>[0m [90m 5 |[0m [36mimport[0m { 
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   [33mBot[0m, 
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   [33mShieldCheck[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   [33mHistory[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   [33mEye[0m, 
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   [33mZap[0m, 
+  [90m   |[0m [31m[1m^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m   [33mChevronRight[0m,
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m12 |[0m   [33mGithub[0m
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m13 |[0m } [36mfrom[0m [32m'lucide-react'[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m14 |[0m
+  [90m15 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mLandingPage[0m() {
+  [90m16 |[0m   [36mreturn[0m (
+
+The export Github was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-ssr] (ecmascript).
+Did you mean to import Gift?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component]
+
+
+    at ./node_modules/ (babel/runtime/regenerator/index.js:3:15)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at ./node_modules/ (babel/runtime/helpers/wrapNativeSuper.js:3:24)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at ./node_modules/ (babel/runtime/helpers/construct.js:1:32)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at ./node_modules/ (babel/runtime/helpers/slicedToArray.js:2:28)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at ./node_modules/ (babel/runtime/helpers/slicedToArray.js:4:23)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./app/page.tsx:5:1)
+    at <unknown> (./app/page.tsx:5:1)

@@ -8,8 +8,7 @@ import {
   History, 
   Eye, 
   Zap, 
-  ChevronRight,
-  Github
+  ChevronRight
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -27,7 +26,7 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted">
             <Link href="#features" className="hover:text-white transition-colors">Features</Link>
             <Link href="https://github.com/samkiell" className="hover:text-white transition-colors flex items-center gap-1">
-              <Github className="h-4 w-4" />
+              <Bot className="h-4 w-4" />
               Source
             </Link>
           </nav>

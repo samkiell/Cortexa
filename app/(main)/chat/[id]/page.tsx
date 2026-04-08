@@ -5,11 +5,11 @@ import dbConnect from '@/lib/db';
 import Conversation from '@/lib/models/Conversation';
 import ChatInterface from '@/components/chat/ChatInterface';
 
-export default async function ChatPage({ params }: { params: { id: string } }) {
+export default async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session) redirect('/login');
 
-  const { id } = params;
+  const { id } = await params;
 
   try {
     await dbConnect();

@@ -4,12 +4,12 @@ import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Conversation from '@/lib/models/Conversation';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session) return new Response('Unauthorized', { status: 401 });
 
   try {
-    const { id } = params;
+    const { id } = await params;
     await dbConnect();
 
     const conversation = await Conversation.findOne({
@@ -25,12 +25,12 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session) return new Response('Unauthorized', { status: 401 });
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const { messages, title } = await req.json();
     await dbConnect();
 
@@ -52,12 +52,12 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session) return new Response('Unauthorized', { status: 401 });
 
   try {
-    const { id } = params;
+    const { id } = await params;
     await dbConnect();
 
     await Conversation.deleteOne({ _id: id, userId: (session.user as any).id });
