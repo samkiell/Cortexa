@@ -43,7 +43,10 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json(formattedModels);
+    // Deduplicate by ID to prevent React key collision errors
+    const uniqueModels = Array.from(new Map(formattedModels.map(m => [m.id, m])).values());
+
+    return NextResponse.json(uniqueModels);
   } catch (error: any) {
     console.error('Error fetching models:', error);
     return new Response(error.message || 'Error fetching models', { status: 500 });
