@@ -41,7 +41,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const conversation = await Conversation.findOneAndUpdate(
       { _id: id, userId: (session.user as any).id },
       { $set: updateData },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!conversation) return new Response('Not Found', { status: 404 });

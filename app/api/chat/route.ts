@@ -38,6 +38,7 @@ export async function POST(req: Request) {
       model: modelId,
       messages: formattedMessages,
       stream: true,
+      max_tokens: 2048,
     });
 
     // Convert the response into a friendly text-stream
