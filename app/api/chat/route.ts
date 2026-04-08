@@ -1,4 +1,3 @@
-import { OpenAIStream, StreamingTextResponse } from 'ai'; // Actually I should use native ReadableStream as requested
 import OpenAI from 'openai';
 import dbConnect from '@/lib/db';
 import Settings from '@/lib/models/Settings';

@@ -31,17 +31,26 @@ export async function GET() {
       models = models.filter((m) => whitelist.includes(m.id));
     }
 
-    // Map to a cleaner format with badges
-    const formattedModels = models.map((m) => {
-      const id = m.id.toLowerCase();
-      return {
-        id: m.id,
-        name: m.id.split('/').pop() || m.id,
-        isVision: id.includes('vision') || id.includes('multimodal'),
-        isUncensored: id.includes('uncensored') || id.includes('abliterated') || id.includes('dolphin'),
-        isReasoning: id.includes('r1') || id.includes('thought') || id.includes('reasoning'),
-      };
-    });
+    // Map and filter for uncensored/abliterated models specifically
+    const formattedModels = models
+      .map((m) => {
+        const id = m.id.toLowerCase();
+        return {
+          id: m.id,
+          name: m.id.split('/').pop() || m.id,
+          isVision: id.includes('vision') || id.includes('multimodal'),
+          isUncensored: 
+            id.includes('uncensored') || 
+            id.includes('abliterated') || 
+            id.includes('dolphin') || 
+            id.includes('hermes') ||
+            id.includes('nous') ||
+            id.includes('openhermes') ||
+            id.includes('instruct-abliterated'),
+          isReasoning: id.includes('r1') || id.includes('thought') || id.includes('reasoning'),
+        };
+      })
+      .filter((m) => m.isUncensored); // Global filter for uncensored models only
 
     // Deduplicate by ID to prevent React key collision errors
     const uniqueModels = Array.from(new Map(formattedModels.map(m => [m.id, m])).values());
