@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,18 +16,47 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
-import { useState } from 'react';
 
 export default function ConversationSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const conversations = [
-    { id: '1', title: 'Quantum Physics Explained', date: 'Today' },
-    { id: '2', title: 'React Performance Tips', date: 'Today' },
-    { id: '3', title: 'Dinner recipes with chicken', date: 'Yesterday' },
-  ];
+  useEffect(() => {
+    const fetchConversations = async () => {
+      if (!session) return;
+      try {
+        const res = await fetch('/api/conversations');
+        if (res.ok) {
+          const data = await res.json();
+          setConversations(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch conversations', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchConversations();
+  }, [session, pathname]); // Re-fetch on pathname change to catch new chats
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this conversation?')) return;
+
+    try {
+      const res = await fetch(`/api/conversations/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setConversations(conversations.filter((c) => c._id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to delete conversation');
+    }
+  };
 
   return (
     <motion.aside
@@ -62,25 +93,36 @@ export default function ConversationSidebar() {
         <div>
           {!isCollapsed && <h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted">Recent Chats</h3>}
           <div className="space-y-1">
-            {conversations.map((conv) => (
-              <Link
-                key={conv.id}
-                href={`/chat/${conv.id}`}
-                className={`group flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm transition-all hover:bg-base ${
-                  pathname === `/chat/${conv.id}` ? 'bg-base text-accent' : 'text-muted'
-                }`}
-              >
-                <MessageCircle className="h-5 w-5 shrink-0" />
-                {!isCollapsed && (
-                  <>
-                    <span className="flex-1 truncate">{conv.title}</span>
-                    <button className="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </>
-                )}
-              </Link>
-            ))}
+            {isLoading ? (
+              <div className="px-4 py-8 flex justify-center">
+                <div className="h-4 w-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className="px-4 py-4 text-xs text-muted/50 italic">No history yet</div>
+            ) : (
+              conversations.map((conv) => (
+                <Link
+                  key={conv._id}
+                  href={`/chat/${conv._id}`}
+                  className={`group flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm transition-all hover:bg-base ${
+                    pathname === `/chat/${conv._id}` ? 'bg-base text-accent' : 'text-muted'
+                  }`}
+                >
+                  <MessageCircle className="h-5 w-5 shrink-0" />
+                  {!isCollapsed && (
+                    <>
+                      <span className="flex-1 truncate">{conv.title}</span>
+                      <button 
+                        onClick={(e) => handleDelete(conv._id, e)}
+                        className="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all p-1"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  )}
+                </Link>
+              ))
+            )}
           </div>
         </div>
       </div>

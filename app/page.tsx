@@ -159,7 +159,7 @@ export default function LandingPage() {
             <Bot className="h-6 w-6 text-accent" />
             <span className="font-syne text-lg font-bold text-white tracking-tight">Cortexa</span>
           </div>
-          <p className="text-sm text-muted">© 2024 Cortexa Platform. All rights reserved.</p>
+          <p className="text-sm text-muted">© 2026 Cortexa Platform. All rights reserved.</p>
           <div className="flex items-center gap-6 text-sm font-medium text-muted">
             <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
             <Link href="#" className="hover:text-white transition-colors">Terms</Link>

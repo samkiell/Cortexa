@@ -27,9 +27,47 @@ export default function ChatInterface({
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [conversationId, setConversationId] = useState<string | undefined>(initialConvId);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('huihui-ai/Llama-3.3-70B-Instruct-abliterated');
+  const [models, setModels] = useState<any[]>([]);
+  const [selectedModel, setSelectedModel] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const res = await fetch('/api/models');
+        if (res.ok) {
+          const data = await res.json();
+          setModels(data);
+          // If no initial model or starting new chat, set first available
+          if (!selectedModel && data.length > 0) {
+            setSelectedModel(data[0].id);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch models');
+      }
+    };
+    fetchModels();
+  }, []);
+
+  // Fetch conversation details if ID exists to sync model
+  useEffect(() => {
+    if (conversationId) {
+      const fetchConv = async () => {
+        try {
+          const res = await fetch(`/api/conversations/${conversationId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setSelectedModel(data.modelId);
+          }
+        } catch (err) {
+          console.error('Failed to sync conversation model');
+        }
+      };
+      fetchConv();
+    }
+  }, [conversationId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -150,8 +188,34 @@ export default function ChatInterface({
       {/* Messages Scroll Area */}
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border-custom">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-muted py-20">
-            <p>Start a conversation with {selectedModel.split('/').pop()}</p>
+          <div className="flex flex-col items-center justify-center min-h-full px-4 py-20 text-center space-y-12">
+            <div className="space-y-4">
+              <div className="h-16 w-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-6">
+                <Sparkles className="h-8 w-8 text-accent" />
+              </div>
+              <h2 className="font-syne text-3xl font-bold text-white tracking-tight">How can I help you today?</h2>
+              <p className="text-muted max-w-md mx-auto">
+                Select from thousands of uncensored models and start chatting. Vision and reasoning capabilities available.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl w-full">
+              {[
+                { title: "Creative Writing", prompt: "Write a short story about a neon-noir city." },
+                { title: "Code Assistant", prompt: "Help me optimize this Go function." },
+                { title: "General Knowledge", prompt: "Explain quantum entanglement like I'm five." },
+                { title: "Image Analysis", prompt: "Analyze this image and describe the scene." }
+              ].map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSend(item.prompt)}
+                  className="group flex flex-col items-start gap-2 rounded-2xl border border-border-custom bg-surface p-5 text-left transition-all hover:border-accent/50 hover:bg-base"
+                >
+                  <h3 className="text-sm font-bold text-white group-hover:text-accent transition-colors">{item.title}</h3>
+                  <p className="text-xs text-muted truncate w-full">{item.prompt}</p>
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="flex flex-col">
