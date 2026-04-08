@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import dbConnect from '@/lib/db';
 import Conversation from '@/lib/models/Conversation';
+import { getModels } from '@/lib/models-data';
 import ChatInterface from '@/components/chat/ChatInterface';
 
 export default async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
@@ -13,10 +14,15 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
 
   try {
     await dbConnect();
-    const conversation = await Conversation.findOne({
-      _id: id,
-      userId: (session.user as any).id,
-    });
+    
+    // Prefetch models and conversation in parallel
+    const [models, conversation] = await Promise.all([
+      getModels(),
+      Conversation.findOne({
+        _id: id,
+        userId: (session.user as any).id,
+      })
+    ]);
 
     if (!conversation) {
       return notFound();
@@ -34,6 +40,7 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
       <ChatInterface 
         initialMessages={initialMessages} 
         conversationId={id} 
+        initialModels={models}
       />
     );
   } catch (error) {

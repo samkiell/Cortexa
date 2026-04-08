@@ -18,21 +18,31 @@ interface Message {
 interface ChatInterfaceProps {
   initialMessages?: Message[];
   conversationId?: string;
+  initialModels?: any[];
 }
 
 export default function ChatInterface({ 
   initialMessages = [], 
-  conversationId: initialConvId 
+  conversationId: initialConvId,
+  initialModels = []
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [conversationId, setConversationId] = useState<string | undefined>(initialConvId);
   const [isLoading, setIsLoading] = useState(false);
-  const [models, setModels] = useState<any[]>([]);
+  const [models, setModels] = useState<any[]>(initialModels);
   const [selectedModel, setSelectedModel] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
+    // Only fetch if models weren't preloaded
+    if (models.length > 0) {
+      if (!selectedModel) {
+        setSelectedModel(models[0].id);
+      }
+      return;
+    }
+
     const fetchModels = async () => {
       try {
         const res = await fetch('/api/models');
@@ -49,7 +59,7 @@ export default function ChatInterface({
       }
     };
     fetchModels();
-  }, []);
+  }, [models, selectedModel]);
 
   // Fetch conversation details if ID exists to sync model
   useEffect(() => {
