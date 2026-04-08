@@ -1,4 +1,4 @@
-# PRD — NexusAI Chat Platform
+# PRD — Cortexa Chat Platform
 
 ## Overview
 A personal-use AI chat web application powered by the Featherless AI API. Users can chat with thousands of open-source and uncensored models through a sleek, dark-themed interface. The platform supports text and image (vision) input, conversation history, model selection, user authentication, and an admin dashboard.

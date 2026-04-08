@@ -1,4 +1,4 @@
-# Start Prompt — NexusAI Chat Platform
+# Start Prompt — Cortexa Chat Platform
 
 Use this prompt to kick off the build in your IDE (Cursor / Windsurf with Gemini).
 
@@ -6,7 +6,7 @@ Use this prompt to kick off the build in your IDE (Cursor / Windsurf with Gemini
 
 ## Prompt
 
-I want to build a full-stack AI chat web application called **NexusAI** using Next.js 14 (App Router). Read the `prd.md` and `claude.md` files in this repo before writing any code — they contain the full spec, folder structure, design system, and rules.
+I want to build a full-stack AI chat web application called **Cortexa** using Next.js 14 (App Router). Read the `prd.md` and `claude.md` files in this repo before writing any code — they contain the full spec, folder structure, design system, and rules.
 
 Here is a summary of what to build and in what order:
 

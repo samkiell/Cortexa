@@ -1,4 +1,4 @@
-# CLAUDE.md — NexusAI Chat Platform
+# CLAUDE.md — Cortexa Chat Platform
 
 ## Project Summary
 A Next.js 14 AI chat platform powered by the Featherless AI API (OpenAI-compatible). Users authenticate, select from thousands of open-source models, chat with text and images, and have their conversations persisted in MongoDB. An admin panel controls API keys, model visibility, and users.
