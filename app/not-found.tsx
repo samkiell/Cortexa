@@ -20,19 +20,6 @@ export default function NotFound() {
           <div className="h-24 w-24 rounded-3xl bg-surface border border-border-custom flex items-center justify-center mx-auto shadow-2xl">
             <Bot className="h-12 w-12 text-accent" />
           </div>
-          <motion.div 
-            animate={{ 
-              scale: [1, 1.2, 1],
-              opacity: [0.5, 1, 0.5]
-            }}
-            transition={{ 
-              repeat: Infinity, 
-              duration: 2 
-            }}
-            className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500/20 border border-red-500 flex items-center justify-center"
-          >
-            <div className="h-2 w-2 rounded-full bg-red-500" />
-          </motion.div>
         </div>
 
         <div className="space-y-4">
@@ -62,12 +49,6 @@ export default function NotFound() {
           </button>
         </div>
       </motion.div>
-
-      {/* Footer Branding */}
-      <div className="absolute bottom-12 flex items-center gap-2 opacity-30">
-        <Bot className="h-5 w-5 text-accent" />
-        <span className="font-syne text-sm font-bold text-white tracking-tight uppercase">Cortexa System</span>
-      </div>
     </div>
   );
 }
