@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Settings from '@/lib/models/Settings';
 
+import { getSettings } from '@/lib/models-data';
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session || (session.user as any).role !== 'admin') {
@@ -11,14 +13,7 @@ export async function GET() {
   }
 
   try {
-    await dbConnect();
-    let settings = await Settings.findOne();
-    if (!settings) {
-      settings = await Settings.create({
-        featherlessApiKey: '',
-        visibleModels: [],
-      });
-    }
+    const settings = await getSettings();
     return NextResponse.json(settings);
   } catch (error: any) {
     return new Response(error.message, { status: 500 });

@@ -14,21 +14,29 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function SettingsForm() {
-  const [apiKey, setApiKey] = useState('');
+interface SettingsFormProps {
+  initialData?: any;
+  initialModels?: any[];
+}
+
+export default function SettingsForm({ initialData, initialModels = [] }: SettingsFormProps) {
+  const [apiKey, setApiKey] = useState(initialData?.featherlessApiKey || '');
   const [showKey, setShowKey] = useState(false);
-  const [models, setModels] = useState<any[]>([]);
-  const [visibleModels, setVisibleModels] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [models, setModels] = useState<any[]>(initialModels);
+  const [visibleModels, setVisibleModels] = useState<string[]>(initialData?.visibleModels || []);
+  const [isLoading, setIsLoading] = useState(!initialData || initialModels.length === 0);
   const [isSaving, setIsSaving] = useState(false);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
+    // Skip if already preloaded
+    if (initialData && initialModels.length > 0) return;
+
     const fetchData = async () => {
       try {
         const [settingsRes, allModelsRes] = await Promise.all([
           fetch('/api/admin/settings'),
-          fetch('/api/models') // This fetches all for admin if possible, but for now we'll fetch general
+          fetch('/api/models') 
         ]);
 
         if (settingsRes.ok) {

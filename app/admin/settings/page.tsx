@@ -1,7 +1,13 @@
 import SettingsForm from '@/components/admin/SettingsForm';
 import { Settings as SettingsIcon } from 'lucide-react';
+import { getSettings, getModels } from '@/lib/models-data';
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+  const [settings, allModels] = await Promise.all([
+    getSettings(),
+    getModels(true)
+  ]);
+
   return (
     <div className="space-y-8 pb-20">
       <div className="flex items-center gap-3">
@@ -14,7 +20,7 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
-      <SettingsForm />
+      <SettingsForm initialData={settings} initialModels={allModels} />
     </div>
   );
 }

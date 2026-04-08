@@ -11,12 +11,17 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
+import { getSettings, getModels } from '@/lib/models-data';
+
 export default async function AdminDashboard() {
   await dbConnect();
 
-  const userCount = await User.countDocuments();
-  const conversationCount = await Conversation.countDocuments();
-  const settings = await Settings.findOne();
+  const [userCount, conversationCount, settings] = await Promise.all([
+    User.countDocuments(),
+    Conversation.countDocuments(),
+    getSettings(),
+  ]);
+
   const visibleModelsCount = settings?.visibleModels?.length || 0;
 
   const stats = [
