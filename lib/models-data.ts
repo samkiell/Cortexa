@@ -50,7 +50,16 @@ export async function getModels(adminMode = false) {
         return {
           id: m.id,
           name: m.id.split('/').pop() || m.id,
-          isVision: id.includes('vision') || id.includes('multimodal'),
+          isVision: 
+            id.includes('vision') || 
+            id.includes('multimodal') || 
+            id.includes('pixtral') || 
+            id.includes('llava') || 
+            id.includes('moondream') || 
+            id.includes('qwen-vl') || 
+            id.includes('minicpm-v') ||
+            id.includes('internvl') ||
+            id.includes('molmo'),
           isUncensored: 
             id.includes('uncensored') || 
             id.includes('abliterated') || 
@@ -73,8 +82,8 @@ export async function getModels(adminMode = false) {
       return uniqueModels;
     }
 
-    // Default: Filter by whitelist AND uncensored for end users
-    let filtered = uniqueModels.filter((m) => m.isUncensored);
+    // Default: Filter by whitelist AND (uncensored OR vision) for end users
+    let filtered = uniqueModels.filter((m) => m.isUncensored || m.isVision);
     if (whitelist.length > 0) {
       filtered = filtered.filter((m) => whitelist.includes(m.id));
     }

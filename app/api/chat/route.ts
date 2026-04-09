@@ -22,11 +22,13 @@ export async function POST(req: Request) {
     // Handle multimodal messages if image is present
     const formattedMessages = messages.map((m: any, idx: number) => {
       if (idx === messages.length - 1 && imageBase64) {
+        // Ensure we don't double-prefix if the client sent the full data URL
+        const base64Data = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
         return {
           role: m.role,
           content: [
             { type: 'text', text: m.content },
-            { type: 'image_url', image_url: { url: imageBase64 } }
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Data}` } }
           ]
         };
       }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Syne, DM_Sans, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { SidebarProvider } from "@/components/providers/SidebarProvider";
 import "./globals.css";
 
 const syne = Syne({
@@ -34,7 +35,9 @@ export default function RootLayout({
       className={`${syne.variable} ${dmSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="bg-base text-text-custom font-dm-sans">
-        {children}
+        <SidebarProvider>
+          {children}
+        </SidebarProvider>
         <Toaster position="bottom-right" theme="dark" closeButton />
       </body>
     </html>

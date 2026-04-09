@@ -76,10 +76,10 @@ export default function ModelSelector({ currentModel, onSelect }: ModelSelectorP
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full border border-border-custom bg-surface px-4 py-2 text-sm font-medium text-white hover:bg-border-custom transition-all"
+        className="flex items-center gap-2 rounded-full border border-border-custom bg-surface px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white hover:bg-border-custom transition-all"
       >
-        <span className="max-w-[150px] truncate">{selectedModel.name}</span>
-        <ChevronDown className={`h-4 w-4 text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <span className="max-w-[80px] sm:max-w-[150px] truncate">{selectedModel.name}</span>
+        <ChevronDown className={`h-3 w-3 sm:h-4 sm:w-4 text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence>
@@ -88,7 +88,7 @@ export default function ModelSelector({ currentModel, onSelect }: ModelSelectorP
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 mt-2 w-80 overflow-hidden rounded-2xl border border-border-custom bg-surface shadow-2xl z-50 px-2 py-2"
+            className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 overflow-hidden rounded-2xl border border-border-custom bg-surface shadow-2xl z-50 px-2 py-2"
           >
             <div className="relative mb-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
