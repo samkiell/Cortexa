@@ -357,7 +357,7 @@ export default function ChatInterface({
                   transition={{ duration: 0.5, delay: 0.1 }}
                   className="flex justify-center mb-6"
                 >
-                  <img src="/logo.png" alt="Cortexa Logo" className="h-16 w-16 opacity-90" />
+                  <img src="/logo.png" alt="Cortexa Logo" className="h-20 w-20 opacity-90" />
                 </motion.div>
                 <h2 className="text-[28px] font-medium text-[#f9fafb] tracking-tight">
                   {getGreeting()}{userName}.

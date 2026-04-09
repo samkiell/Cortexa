@@ -144,7 +144,7 @@ export default function ConversationSidebar() {
       >
         {/* App Logo/Name & Toggle */}
         <div className="flex h-12 items-center justify-between px-4 shrink-0">
-          <img src="/landscape_logo.png" alt="Cortexa" className="h-[21px] w-auto opacity-90" />
+          <img src="/landscape_logo.png" alt="Cortexa" className="h-[26px] w-auto opacity-90" />
           <button 
             onClick={() => setIsOpen(false)}
             className="p-1.5 rounded-md hover:bg-[#1a1a1a] text-[#6b7280] transition-colors"
