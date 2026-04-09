@@ -98,6 +98,41 @@ export default function ChatInterface({
     });
   }, []);
 
+  const handleDeleteMessage = async (index: number) => {
+    const updatedMessages = messages.filter((_, i) => i !== index);
+    setMessages(updatedMessages);
+
+    if (conversationId) {
+      try {
+        await fetch(`/api/conversations/${conversationId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: updatedMessages.map(m => ({ role: m.role, content: m.content })) }),
+        });
+      } catch (error) {
+        console.error('Failed to update conversation after delete:', error);
+      }
+    }
+  };
+
+  const handleEditMessage = async (index: number, newContent: string) => {
+    const updatedMessages = [...messages];
+    updatedMessages[index] = { ...updatedMessages[index], content: newContent };
+    setMessages(updatedMessages);
+
+    if (conversationId) {
+      try {
+        await fetch(`/api/conversations/${conversationId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: updatedMessages.map(m => ({ role: m.role, content: m.content })) }),
+        });
+      } catch (error) {
+        console.error('Failed to update conversation after edit:', error);
+      }
+    }
+  };
+
   const handleSend = async (content: string, imageUrl?: string, searchEnabled?: boolean) => {
     if (!content.trim() && !imageUrl) return;
 
@@ -333,6 +368,8 @@ export default function ChatInterface({
                       message={m} 
                       isLast={virtualRow.index === messages.length - 1}
                       onRegenerate={() => handleSend(messages[messages.length-2].content, messages[messages.length-2].imageUrl)}
+                      onDelete={() => handleDeleteMessage(virtualRow.index)}
+                      onEdit={(newContent) => handleEditMessage(virtualRow.index, newContent)}
                     />
                   </div>
                 );

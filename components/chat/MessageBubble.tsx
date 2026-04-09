@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Copy, 
@@ -10,7 +8,9 @@ import {
   RefreshCw,
   MoreHorizontal,
   Globe,
-  ExternalLink
+  ExternalLink,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -31,12 +31,25 @@ interface MessageBubbleProps {
   message: Message;
   isLast?: boolean;
   onRegenerate?: () => void;
+  onDelete?: () => void;
+  onEdit?: (newContent: string) => void;
 }
 
-const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerate }: MessageBubbleProps) {
+const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerate, onDelete, onEdit }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(message.content);
+  const editRef = useRef<HTMLTextAreaElement>(null);
   const isAssistant = message.role === 'assistant';
+
+  useEffect(() => {
+    if (isEditing && editRef.current) {
+      editRef.current.focus();
+      editRef.current.style.height = 'auto';
+      editRef.current.style.height = `${editRef.current.scrollHeight}px`;
+    }
+  }, [isEditing]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(message.content);
@@ -45,24 +58,89 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  const handleSaveEdit = () => {
+    if (editValue.trim() !== message.content) {
+      onEdit?.(editValue);
+    }
+    setIsEditing(false);
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18 }}
-      className={`group flex w-full flex-col ${isAssistant ? 'items-start' : 'items-end'} mb-6`}
+      className={`group flex w-full flex-col ${isAssistant ? 'items-start' : 'items-end'} mb-6 relative`}
     >
-      <div className={`relative flex flex-col gap-2 ${isAssistant ? 'w-full' : 'max-w-[85%]'}`}>
+      <div className={`relative flex flex-col gap-2 ${isAssistant ? 'w-full' : 'max-w-[85%] items-end'}`}>
         
-        {/* User Message Pill */}
+        {/* User Message Pill or Editor */}
         {!isAssistant ? (
-          <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-[18px] px-4 py-2.5 text-[14px] text-[#f9fafb]">
-            {message.imageUrl && (
-              <div className="mb-2 overflow-hidden rounded-lg border border-[#2e2e2e]">
-                <img src={message.imageUrl} alt="Uploaded" className="max-h-64 object-contain" />
+          <div className="w-full flex flex-col items-end">
+            {isEditing ? (
+              <div className="w-full min-w-[300px] bg-[#1a1a1a] border border-[#3b82f6]/30 rounded-xl p-3">
+                <textarea
+                  ref={editRef}
+                  value={editValue}
+                  onChange={(e) => {
+                    setEditValue(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+                  }}
+                  className="w-full bg-transparent text-[14px] text-[#f9fafb] outline-none resize-none leading-relaxed"
+                  rows={1}
+                />
+                <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-[#2a2a2a]">
+                  <button 
+                    onClick={() => setIsEditing(false)}
+                    className="px-3 py-1 rounded-md text-[12px] text-[#9ca3af] hover:text-[#f9fafb] hover:bg-[#2a2a2a] transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleSaveEdit}
+                    className="px-3 py-1 rounded-md text-[12px] bg-[#3b82f6] text-white hover:bg-[#2563eb] transition-all"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="relative group/userbubble">
+                {/* User Hover Actions (to the left) */}
+                <div className="absolute left-0 -translate-x-full top-0 h-full pr-2 flex items-start pt-1 opacity-0 group-hover/userbubble:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 bg-[#0d0d0d] border border-[#1f1f1f] rounded-lg p-0.5 shadow-xl">
+                    <button 
+                      onClick={() => setIsEditing(true)}
+                      className="p-1 px-1.5 rounded hover:bg-[#1a1a1a] text-[#6b7280] hover:text-[#d1d5db] transition-all" title="Edit"
+                    >
+                      <Pencil className="h-[13px] w-[13px]" />
+                    </button>
+                    <button 
+                      onClick={copyToClipboard}
+                      className="p-1 px-1.5 rounded hover:bg-[#1a1a1a] text-[#6b7280] hover:text-[#d1d5db] transition-all" title="Copy"
+                    >
+                      {isCopied ? <Check className="h-[13px] w-[13px]" /> : <Copy className="h-[13px] w-[13px]" />}
+                    </button>
+                    <button 
+                      onClick={onDelete}
+                      className="p-1 px-1.5 rounded hover:bg-[#1a1a1a] text-[#6b7280] hover:text-red-400 transition-all" title="Delete"
+                    >
+                      <Trash2 className="h-[13px] w-[13px]" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-[18px] px-4 py-2.5 text-[14px] text-[#f9fafb]">
+                  {message.imageUrl && (
+                    <div className="mb-2 overflow-hidden rounded-lg border border-[#2e2e2e]">
+                      <img src={message.imageUrl} alt="Uploaded" className="max-h-64 object-contain" />
+                    </div>
+                  )}
+                  <p className="whitespace-pre-wrap leading-normal font-normal">{message.content}</p>
+                </div>
               </div>
             )}
-            <p className="whitespace-pre-wrap leading-normal font-normal">{message.content}</p>
           </div>
         ) : (
           /* Assistant Message Content */
@@ -76,7 +154,25 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
               </div>
             )}
 
-            {message.content ? (
+            {isEditing ? (
+              <div className="w-full bg-[#1a1a1a] border border-[#3b82f6]/30 rounded-xl p-3">
+                <textarea
+                  ref={editRef}
+                  value={editValue}
+                  onChange={(e) => {
+                    setEditValue(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+                  }}
+                  className="w-full bg-transparent text-[14px] text-[#f9fafb] outline-none resize-none leading-relaxed"
+                  rows={1}
+                />
+                <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-[#2a2a2a]">
+                  <button onClick={() => setIsEditing(false)} className="px-3 py-1 rounded-md text-[12px] text-[#9ca3af] hover:text-[#f9fafb] transition-all">Cancel</button>
+                  <button onClick={handleSaveEdit} className="px-3 py-1 rounded-md text-[12px] bg-[#3b82f6] text-white transition-all">Save</button>
+                </div>
+              </div>
+            ) : (
               <>
                 <div className="prose prose-invert prose-sm max-w-none 
                   prose-p:leading-[1.8] prose-p:mb-4 last:prose-p:mb-0
@@ -173,7 +269,7 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
                 )}
               </>
             ) : (
-              /* Bouncing Dots Indicator (for standard non-search loading or during search data fetch if no query yet) */
+              /* Bouncing Dots Indicator */
               !message.isSearching && (
                 <div className="flex items-center gap-1.5 py-2">
                   {[0, 1, 2].map((i) => (
@@ -194,38 +290,57 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
             )}
 
             {/* Assistant Action Row */}
-            {message.content && (
+            {!isEditing && message.content && (
               <motion.div 
                 initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-                className="flex items-center gap-2 mt-2 opacity-0 transition-opacity duration-150"
+                animate={{ opacity: 1 }}
+                className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
               >
-                <button
-                  onClick={copyToClipboard}
-                  className="p-1 px-1.5 rounded hover:bg-[#1a1a1a] text-[#6b7280] hover:text-[#d1d5db] transition-all"
-                >
-                  {isCopied ? <Check className="h-[15px] w-[15px]" /> : <Copy className="h-[15px] w-[15px]" />}
-                </button>
-                <button
-                  onClick={() => setFeedback(feedback === 'up' ? null : 'up')}
-                  className={`p-1 px-1.5 rounded hover:bg-[#1a1a1a] transition-all ${feedback === 'up' ? 'text-[#3b82f6]' : 'text-[#6b7280] hover:text-[#d1d5db]'}`}
-                >
-                  <ThumbsUp className="h-[15px] w-[15px]" />
-                </button>
-                <button
-                  onClick={() => setFeedback(feedback === 'down' ? null : 'down')}
-                  className={`p-1 px-1.5 rounded hover:bg-[#1a1a1a] transition-all ${feedback === 'down' ? 'text-gray-400' : 'text-[#6b7280] hover:text-[#d1d5db]'}`}
-                >
-                  <ThumbsDown className="h-[15px] w-[15px]" />
-                </button>
-                {isLast && onRegenerate && (
+                <div className="flex items-center gap-1">
                   <button
-                    onClick={onRegenerate}
+                    onClick={copyToClipboard}
                     className="p-1 px-1.5 rounded hover:bg-[#1a1a1a] text-[#6b7280] hover:text-[#d1d5db] transition-all"
+                    title="Copy"
                   >
-                    <RefreshCw className="h-[15px] w-[15px]" />
+                    {isCopied ? <Check className="h-[15px] w-[15px]" /> : <Copy className="h-[15px] w-[15px]" />}
                   </button>
-                )}
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="p-1 px-1.5 rounded hover:bg-[#1a1a1a] text-[#6b7280] hover:text-[#d1d5db] transition-all"
+                    title="Edit"
+                  >
+                    <Pencil className="h-[14px] w-[14px]" />
+                  </button>
+                  <button
+                    onClick={onDelete}
+                    className="p-1 px-1.5 rounded hover:bg-[#1a1a1a] text-[#6b7280] hover:text-red-400 transition-all"
+                    title="Delete"
+                  >
+                    <Trash2 className="h-[14px] w-[14px]" />
+                  </button>
+                  <div className="w-[1px] h-3 bg-[#2a2a2a] mx-1" />
+                  <button
+                    onClick={() => setFeedback(feedback === 'up' ? null : 'up')}
+                    className={`p-1 px-1.5 rounded hover:bg-[#1a1a1a] transition-all ${feedback === 'up' ? 'text-[#3b82f6]' : 'text-[#6b7280] hover:text-[#d1d5db]'}`}
+                  >
+                    <ThumbsUp className="h-[15px] w-[15px]" />
+                  </button>
+                  <button
+                    onClick={() => setFeedback(feedback === 'down' ? null : 'down')}
+                    className={`p-1 px-1.5 rounded hover:bg-[#1a1a1a] transition-all ${feedback === 'down' ? 'text-gray-400' : 'text-[#6b7280] hover:text-[#d1d5db]'}`}
+                  >
+                    <ThumbsDown className="h-[15px] w-[15px]" />
+                  </button>
+                  {isLast && onRegenerate && (
+                    <button
+                      onClick={onRegenerate}
+                      className="p-1 px-1.5 rounded hover:bg-[#1a1a1a] text-[#6b7280] hover:text-[#d1d5db] transition-all"
+                      title="Regenerate"
+                    >
+                      <RefreshCw className="h-[15px] w-[15px]" />
+                    </button>
+                  )}
+                </div>
               </motion.div>
             )}
           </div>

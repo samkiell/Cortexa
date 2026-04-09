@@ -80,11 +80,9 @@ export default function MessageInput({ onSend, isLoading, isVisionCapable, suppo
   const canSend = (text.trim().length > 0 || image) && !isLoading;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none">
-      <div className="w-full h-24 bg-gradient-to-t from-[#0d0d0d] to-transparent" />
-      <div className="bg-[#0d0d0d] pb-6 px-4">
-        <div className="max-w-[680px] mx-auto pointer-events-auto">
-          <div className="relative flex flex-col w-full bg-[#161616] border border-[#2a2a2a] rounded-[20px] transition-all duration-200 focus-within:border-[#3b82f6]/40 focus-within:ring-1 focus-within:ring-[#3b82f6]/10">
+    <div className="w-full bg-[#0d0d0d] pb-6 px-4 shrink-0">
+      <div className="max-w-[680px] mx-auto">
+        <div className="relative flex flex-col w-full bg-[#161616] border border-[#2a2a2a] rounded-[20px] transition-all duration-200 focus-within:border-[#3b82f6]/40 focus-within:ring-1 focus-within:ring-[#3b82f6]/10">
             
             {/* Image Preview */}
             <AnimatePresence>
