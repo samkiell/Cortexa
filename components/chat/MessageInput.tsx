@@ -118,7 +118,7 @@ export default function MessageInput({ onSend, isLoading, isVisionCapable, suppo
                 }
               }}
               placeholder="Message Cortexa..."
-              className="w-full bg-transparent py-3 px-4 text-[14px] text-[#f9fafb] placeholder-[#4b5563] outline-none resize-none min-h-[48px] line-height-1.5"
+              className="w-full bg-transparent py-3 px-4 text-[14px] text-[#f9fafb] placeholder-[#4b5563] outline-none resize-none min-h-[48px] leading-normal"
             />
 
             <div className="flex items-center justify-between px-3 pb-3">

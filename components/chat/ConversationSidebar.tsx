@@ -162,7 +162,7 @@ export default function ConversationSidebar() {
             className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-[13px] text-[#9ca3af] hover:bg-[#1a1a1a] transition-all group"
           >
             <Plus className="h-4 w-4" />
-            <span>New chat</span>
+            <span className="font-bold">New chat</span>
           </Link>
         </div>
 
