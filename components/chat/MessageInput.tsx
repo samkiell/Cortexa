@@ -3,11 +3,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  SendHorizontal, 
-  Image as ImageIcon, 
+  ArrowUp, 
   X, 
   Mic,
-  Loader2,
   Paperclip
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -61,18 +59,11 @@ export default function MessageInput({ onSend, isLoading, isVisionCapable }: Mes
       return;
     }
 
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      toast.error('Only JPEG, PNG, and WebP images are allowed.');
-      return;
-    }
-
     const reader = new FileReader();
     reader.onloadend = () => {
       setImage(reader.result as string);
     };
     reader.readAsDataURL(file);
-    
-    // Clear the input so the same file can be selected again if removed
     e.target.value = '';
   };
 
@@ -84,121 +75,103 @@ export default function MessageInput({ onSend, isLoading, isVisionCapable }: Mes
     }
   };
 
+  const canSend = (text.trim().length > 0 || image) && !isLoading;
+
   return (
-    <div className="w-full max-w-4xl px-4 pb-6">
-      <div className="relative flex flex-col w-full bg-surface border border-white/10 rounded-2xl shadow-2xl focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/20 transition-all overflow-hidden">
-        
-        {/* Image Preview (Inside Container) */}
-        <AnimatePresence>
-          {image && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="p-3 border-b border-white/5"
-            >
-              <div className="relative h-20 w-20 overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                <img src={image} alt="Preview" className="h-full w-full object-cover" />
-                <button 
-                  onClick={() => setImage(null)}
-                  className="absolute top-1 right-1 rounded-full bg-black/60 p-1 text-white hover:bg-black transition-all"
+    <div className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none">
+      <div className="w-full h-24 bg-gradient-to-t from-[#0d0d0d] to-transparent" />
+      <div className="bg-[#0d0d0d] pb-6 px-4">
+        <div className="max-w-[680px] mx-auto pointer-events-auto">
+          <div className="relative flex flex-col w-full bg-[#161616] border border-[#2a2a2a] rounded-[20px] transition-all duration-200 focus-within:border-[#3b82f6]/40 focus-within:ring-1 focus-within:ring-[#3b82f6]/10">
+            
+            {/* Image Preview */}
+            <AnimatePresence>
+              {image && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="p-3"
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  <div className="relative h-14 w-14 rounded-lg overflow-hidden border border-[#2a2a2a]">
+                    <img src={image} alt="" className="h-full w-full object-cover" />
+                    <button 
+                      onClick={() => setImage(null)}
+                      className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-black/60 text-white hover:bg-[#3b82f6]/80 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        <div className="flex flex-col p-2">
-          <textarea
-            ref={textareaRef}
-            rows={1}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Message Cortexa..."
-            className="w-full bg-transparent py-3 px-4 text-sm text-foreground outline-none resize-none min-h-[52px] scrollbar-none"
-          />
+            <textarea
+              ref={textareaRef}
+              rows={1}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Message Cortexa..."
+              className="w-full bg-transparent py-3 px-4 text-[14px] text-[#f9fafb] placeholder-[#4b5563] outline-none resize-none min-h-[48px] line-height-1.5"
+            />
 
-          <div className="flex items-center justify-between px-2 pb-2 mt-1">
-            <div className="flex items-center gap-0.5 sm:gap-1">
-              {/* Vision Button */}
-              {isVisionCapable && (
-                <>
+            <div className="flex items-center justify-between px-3 pb-3">
+              <div className="flex items-center gap-1">
+                {isVisionCapable && (
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-1.5 sm:p-2 rounded-xl text-muted-foreground hover:bg-white/5 hover:text-foreground transition-all"
-                    title="Upload image"
+                    className="flex items-center justify-center p-1.5 rounded-md text-[#6b7280] hover:text-[#d1d5db] transition-colors"
                   >
-                    <ImageIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <Paperclip className="h-4 w-4" />
+                    <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
                   </button>
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={handleImageUpload} 
-                    className="hidden" 
-                    accept="image/jpeg,image/png,image/webp"
-                  />
-                </>
-              )}
-
-              {/* Voice Button */}
-              {isVoiceSupported && (
-                <div className="relative flex items-center">
-                  <button
-                    onClick={toggleVoice}
-                    className={`p-1.5 sm:p-2 rounded-xl transition-all relative z-10 ${
-                      isListening ? 'text-accent bg-accent/10' : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
-                    }`}
-                    title={isListening ? "Stop listening" : "Voice input"}
-                  >
-                    <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </button>
-                  {isListening && (
-                    <>
+                )}
+                
+                {isVoiceSupported && (
+                  <div className="relative flex items-center justify-center">
+                    <button
+                      onClick={toggleVoice}
+                      className={`p-1.5 rounded-md transition-colors relative z-10 flex items-center justify-center ${
+                        isListening ? 'text-[#3b82f6]' : 'text-[#6b7280] hover:text-[#d1d5db]'
+                      }`}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </button>
+                    {isListening && (
                       <motion.div
-                        layoutId="pulse"
-                        className="absolute inset-0 rounded-xl bg-accent/20"
+                        layoutId="mic-pulse"
+                        className="absolute inset-0 rounded-md bg-[#3b82f6]/20"
                         animate={{ scale: [1, 1.4], opacity: [1, 0] }}
-                        transition={{ duration: 1, repeat: Infinity }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
                       />
-                      <span className="hidden sm:inline-block ml-2 text-xs font-medium text-accent animate-pulse">Listening...</span>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
-            <div className="flex items-center gap-2 sm:gap-3">
-              {text.length > 0 && (
-                <span className="text-[9px] sm:text-[10px] text-muted-foreground font-mono">
-                  {text.length}
-                </span>
-              )}
-              
-              <button
+              <motion.button
+                whileTap={{ scale: 0.94 }}
                 onClick={handleSend}
-                disabled={(!text.trim() && !image) || isLoading}
-                className={`flex items-center justify-center h-8 w-8 sm:h-10 sm:w-10 rounded-xl shadow-lg transition-all ${
-                  (!text.trim() && !image) || isLoading
-                    ? 'bg-secondary text-muted-foreground cursor-not-allowed opacity-50' 
-                    : 'bg-accent text-white hover:scale-105 active:scale-95 shadow-accent/20'
+                disabled={!canSend}
+                className={`flex items-center justify-center h-8 w-8 rounded-full transition-all duration-150 ${
+                  canSend 
+                    ? 'bg-[#ffffff] text-[#0d0d0d]' 
+                    : 'bg-[#1e1e1e] text-[#4b5563] cursor-not-allowed'
                 }`}
               >
-                {isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <SendHorizontal className="h-5 w-5" />
-                )}
-              </button>
+                <ArrowUp className="h-4 w-4" />
+              </motion.button>
             </div>
           </div>
+          <p className="mt-2 text-center text-[11px] text-[#4b5563]">
+            Cortexa can make mistakes. Please verify important information.
+          </p>
         </div>
       </div>
     </div>

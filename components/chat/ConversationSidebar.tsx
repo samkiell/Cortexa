@@ -1,22 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
-  TrendingUp, 
-  LogOut, 
+  MoreHorizontal,
   ChevronLeft, 
   ChevronRight,
   MessageCircle,
   Trash2,
-  Sparkles,
-  X
+  Settings,
+  X,
+  SquarePen
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
-import { formatDistanceToNow } from 'date-fns';
+import { isToday, isWithinInterval, subDays, startOfDay } from 'date-fns';
 import { useSidebar } from '@/components/providers/SidebarProvider';
 import Modal from '@/components/ui/Modal';
 
@@ -24,7 +24,6 @@ export default function ConversationSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const { isOpen, setIsOpen } = useSidebar();
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [conversations, setConversations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -34,7 +33,7 @@ export default function ConversationSidebar() {
   const [targetDeleteId, setTargetDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -42,9 +41,7 @@ export default function ConversationSidebar() {
 
   useEffect(() => {
     const fetchConversations = async () => {
-      // Fetch if session exists AND (on desktop OR the sidebar drawer is open on mobile)
-      if (!session || (isMobile && !isOpen)) return;
-      
+      if (!session) return;
       try {
         const res = await fetch('/api/conversations');
         if (res.ok) {
@@ -57,9 +54,32 @@ export default function ConversationSidebar() {
         setIsLoading(false);
       }
     };
-
     fetchConversations();
-  }, [session, pathname, isOpen, isMobile]);
+  }, [session, pathname]);
+
+  const groupedConversations = useMemo(() => {
+    const groups: { [key: string]: any[] } = {
+      Today: [],
+      'Previous 7 Days': [],
+      Older: []
+    };
+
+    const now = new Date();
+    const sevenDaysAgo = subDays(startOfDay(now), 7);
+
+    conversations.forEach(conv => {
+      const date = new Date(conv.updatedAt || conv.createdAt);
+      if (isToday(date)) {
+        groups.Today.push(conv);
+      } else if (date >= sevenDaysAgo) {
+        groups['Previous 7 Days'].push(conv);
+      } else {
+        groups.Older.push(conv);
+      }
+    });
+
+    return groups;
+  }, [conversations]);
 
   const handleDeleteClick = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -90,13 +110,14 @@ export default function ConversationSidebar() {
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={confirmDelete}
         title="Delete Conversation"
-        description="Are you sure you want to permanently delete this conversation history? This action cannot be undone."
-        confirmText="Delete History"
+        description="Are you sure you want to permanently delete this conversation? This cannot be undone."
+        confirmText="Delete"
         variant="danger"
       />
-      {/* Mobile Overlay */}
+
+      {/* Mobile Backdrop */}
       <AnimatePresence>
-        {isOpen && (
+        {isMobile && isOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -110,134 +131,97 @@ export default function ConversationSidebar() {
       <motion.aside
         initial={false}
         animate={{ 
-          width: isCollapsed ? 80 : 300,
-          x: isMobile ? (isOpen ? 0 : -300) : 0
+          width: isMobile ? (isOpen ? 240 : 0) : 240,
+          x: isMobile ? (isOpen ? 0 : -240) : 0
         }}
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-white/5 bg-background transition-all duration-300 lg:relative lg:translate-x-0 ${isOpen ? 'shadow-2xl' : ''}`}
+        className="fixed inset-y-0 left-0 z-40 flex flex-col border-r border-[#1f1f1f] bg-[#0d0d0d] overflow-hidden transition-all duration-300 lg:relative lg:w-[240px]"
       >
-      {/* Sidebar Header */}
-      <div className="flex h-14 items-center justify-between px-4 border-b border-white/5">
-        {!isCollapsed && (
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-accent" />
-            <span className="font-mono text-sm font-bold text-foreground tracking-widest uppercase">Cortexa</span>
-          </div>
-        )}
-        <button 
-          onClick={isMobile ? () => setIsOpen(false) : () => setIsCollapsed(!isCollapsed)}
-          className={`rounded-lg p-2 text-muted-foreground hover:bg-white/5 hover:text-foreground transition-colors ${isCollapsed ? 'mx-auto' : ''}`}
-        >
-          {isMobile ? (
-            <X className="h-4 w-4" />
-          ) : (
-            isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />
-          )}
-        </button>
-      </div>
-
-      {/* New Chat Button */}
-      <div className="p-4">
-        <Link 
-          href="/chat"
-          className={`flex items-center justify-center gap-3 rounded-xl border border-white/10 bg-surface px-4 py-3 text-sm font-medium text-foreground hover:bg-surface/80 hover:border-accent/30 transition-all group ${isCollapsed ? 'w-12 px-0 mx-auto' : 'w-full'}`}
-        >
-          <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
-          {!isCollapsed && <span>New Conversation</span>}
-        </Link>
-      </div>
-
-      {/* Conversation List */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4 scrollbar-thin scrollbar-thumb-white/5">
-        <div>
-          {!isCollapsed && (
-            <h3 className="mb-4 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50">History</h3>
-          )}
-          <div className="space-y-1">
-            {isLoading ? (
-              <div className="px-4 py-8 flex justify-center">
-                <div className="h-4 w-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : conversations.length === 0 ? (
-              !isCollapsed && <div className="px-4 py-4 text-[10px] text-muted-foreground/30 uppercase font-mono italic">Void</div>
-            ) : (
-              conversations.map((conv) => {
-                const isActive = pathname === `/chat/${conv._id}`;
-                return (
-                  <Link
-                    key={conv._id}
-                    href={`/chat/${conv._id}`}
-                    className={`group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-all border border-transparent ${
-                      isActive 
-                        ? 'bg-accent/5 border-accent/20 text-foreground' 
-                        : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
-                    } ${isCollapsed ? 'justify-center px-0' : ''}`}
-                  >
-                    {isActive && (
-                      <motion.div 
-                        layoutId="active-nav"
-                        className="absolute left-0 top-2 bottom-2 w-0.5 bg-accent rounded-full"
-                      />
-                    )}
-                    <MessageCircle className={`h-4 w-4 shrink-0 ${isActive ? 'text-accent' : 'text-muted-foreground/60'}`} />
-                    {!isCollapsed && (
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate font-medium">{conv.title || 'Untitled Session'}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[9px] font-mono text-muted-foreground/40 truncate uppercase">
-                            {conv.modelId?.split('/').pop() || 'Model'}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground/30">•</span>
-                          <span className="text-[9px] text-muted-foreground/30 whitespace-nowrap">
-                            {conv.updatedAt ? formatDistanceToNow(new Date(conv.updatedAt), { addSuffix: false }) : 'just now'}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                    {!isCollapsed && (
-                      <button 
-                        onClick={(e) => handleDeleteClick(conv._id, e)}
-                        className="opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all p-1"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </Link>
-                );
-              })
-            )}
-          </div>
+        {/* App Logo/Name */}
+        <div className="flex h-12 items-center px-4">
+          <span className="text-[13px] font-medium text-[#9ca3af]">Cortexa</span>
         </div>
-      </div>
 
-      {/* Footer / User Info */}
-      <div className="mt-auto border-t border-white/5 p-4 space-y-2">
-        {session?.user?.role === 'admin' && !isCollapsed && (
+        {/* New Chat Button */}
+        <div className="px-3 pb-4">
           <Link 
-            href="/admin"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-muted-foreground hover:bg-white/5 hover:text-foreground transition-all group"
+            href="/chat"
+            onClick={() => isMobile && setIsOpen(false)}
+            className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-[13px] text-[#9ca3af] hover:bg-[#1a1a1a] transition-all group"
           >
-            <TrendingUp className="h-4 w-4 text-muted-foreground/60 group-hover:text-accent transition-colors" />
-            <span>Admin Interface</span>
+            <Plus className="h-4 w-4" />
+            <span>New chat</span>
           </Link>
-        )}
-        
-        <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border border-white/5 bg-surface/50 ${isCollapsed ? 'justify-center px-0 bg-transparent border-none' : ''}`}>
-          {!isCollapsed && (
-            <div className="flex-1 min-w-0 p-1">
-              <p className="text-xs font-bold text-foreground truncate">{session?.user?.name || 'Authorized User'}</p>
-              <p className="text-[10px] text-muted-foreground/50 truncate font-mono uppercase tracking-tighter">{session?.user?.role || 'Guest'}</p>
+        </div>
+
+        {/* Conversation List */}
+        <div className="flex-1 overflow-y-auto px-2 space-y-2 scrollbar-none pb-4">
+          {Object.entries(groupedConversations).map(([group, items]) => (
+            items.length > 0 && (
+              <div key={group} className="space-y-0.5">
+                <h3 className="px-3 py-3 text-[11px] font-medium text-[#6b7280]">{group}</h3>
+                <div className="space-y-0.5">
+                  {items.map((conv) => {
+                    const isActive = pathname === `/chat/${conv._id}`;
+                    return (
+                      <Link
+                        key={conv._id}
+                        href={`/chat/${conv._id}`}
+                        onClick={() => isMobile && setIsOpen(false)}
+                        className={`group relative flex items-center justify-between rounded-lg px-3 py-2 text-[13px] line-height-[1.4] transition-all ${
+                          isActive 
+                            ? 'bg-[#1f1f1f] text-[#f9fafb]' 
+                            : 'text-[#c9c9c9] hover:bg-[#1a1a1a]'
+                        }`}
+                      >
+                        <span className="truncate flex-1 pr-2">{conv.title || 'Untitled'}</span>
+                        <div className="flex items-center">
+                          <button 
+                            onClick={(e) => handleDeleteClick(conv._id, e)}
+                            className="opacity-0 group-hover:opacity-100 hover:text-white transition-opacity p-1"
+                          >
+                            <MoreHorizontal className="h-4 w-4 text-[#6b7280]" />
+                          </button>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )
+          ))}
+          {isLoading && !conversations.length && (
+            <div className="flex justify-center py-8">
+              <div className="h-4 w-4 border-2 border-[#2a2a2a] border-t-[#6b7280] rounded-full animate-spin" />
             </div>
           )}
+        </div>
+
+        {/* User / Settings Footer */}
+        <div className="mt-auto border-t border-[#1f1f1f] p-3 flex items-center justify-between group/footer">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="h-7 w-7 rounded-full bg-[#1d4ed8] flex items-center justify-center shrink-0 overflow-hidden">
+               {session?.user?.image ? (
+                 <img src={session.user.image} alt="" className="h-full w-full object-cover" />
+               ) : (
+                 <span className="text-[11px] font-medium text-[#93c5fd]">
+                   {session?.user?.name ? (
+                     session.user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                   ) : 'U'}
+                 </span>
+               )}
+            </div>
+            <div className="min-w-0">
+              <p className="text-[13px] font-medium text-[#d1d5db] truncate">{session?.user?.name || 'User'}</p>
+            </div>
+          </div>
           <button 
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="rounded-lg p-2 text-muted-foreground hover:bg-red-400/10 hover:text-red-400 transition-all"
-            title="Deauthorize"
+            className="p-1.5 rounded-md hover:bg-[#1a1a1a] text-[#6b7280] hover:text-[#d1d5db] transition-colors"
+            title="Settings"
           >
-            <LogOut className="h-4 w-4" />
+            <Settings className="h-4 w-4" />
           </button>
         </div>
-      </div>
-    </motion.aside>
+      </motion.aside>
     </>
   );
 }

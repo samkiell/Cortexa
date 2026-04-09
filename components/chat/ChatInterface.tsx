@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, MessageSquare, Code, PenTool, Lightbulb, Menu } from 'lucide-react';
+import { SquarePen, ArrowDown, Menu } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSidebar } from '@/components/providers/SidebarProvider';
 import { useModels } from '@/contexts/ModelContext';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useSession } from 'next-auth/react';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import ModelSelector from './ModelSelector';
@@ -23,25 +24,21 @@ interface Message {
 interface ChatInterfaceProps {
   initialMessages?: Message[];
   conversationId?: string;
+  initialModels?: any[];
 }
-
-const EXAMPLE_PROMPTS = [
-  { icon: PenTool, title: "Creative Writing", prompt: "Write a short story about a neon-noir city." },
-  { icon: Code, title: "Code Assistant", prompt: "Help me optimize this React component." },
-  { icon: Lightbulb, title: "General Knowledge", prompt: "Explain quantum entanglement like I'm five." },
-  { icon: MessageSquare, title: "Roleplay", prompt: "Act as a futuristic philosopher debating AI consciousness." }
-];
 
 export default function ChatInterface({ 
   initialMessages = [], 
   conversationId: initialConvId,
 }: ChatInterfaceProps) {
   const { toggle } = useSidebar();
+  const { data: session } = useSession();
   const { models, getModelById } = useModels();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [conversationId, setConversationId] = useState<string | undefined>(initialConvId);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('');
+  const [showScrollButton, setShowScrollButton] = useState(false);
   
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -49,36 +46,23 @@ export default function ChatInterface({
   const animationFrameRef = useRef<number | null>(null);
   const router = useRouter();
 
-  // Set default model once models are loaded
   useEffect(() => {
     if (models.length > 0 && !selectedModel) {
-      setSelectedModel(models[4]?.id || models[0]?.id);
+      const saved = localStorage.getItem('last_selected_model');
+      setSelectedModel(saved || models[0].id);
     }
   }, [models, selectedModel]);
 
-  // Sync model with conversation
   useEffect(() => {
-    if (conversationId) {
-      const fetchConv = async () => {
-        try {
-          const res = await fetch(`/api/conversations/${conversationId}`);
-          if (res.ok) {
-            const data = await res.json();
-            setSelectedModel(data.modelId);
-          }
-        } catch (err) {
-          console.error('Failed to sync conversation model');
-        }
-      };
-      fetchConv();
+    if (selectedModel) {
+      localStorage.setItem('last_selected_model', selectedModel);
     }
-  }, [conversationId]);
+  }, [selectedModel]);
 
-  // Virtualization
   const rowVirtualizer = useVirtualizer({
     count: messages.length,
     getScrollElement: () => scrollAreaRef.current,
-    estimateSize: () => 100, // Estimated height of a message bubble
+    estimateSize: () => 100,
     overscan: 5,
   });
 
@@ -93,6 +77,13 @@ export default function ChatInterface({
       scrollToBottom();
     }
   }, [messages.length, scrollToBottom]);
+
+  const handleScroll = useCallback(() => {
+    if (scrollAreaRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
+      setShowScrollButton(scrollHeight - scrollTop - clientHeight > 300);
+    }
+  }, []);
 
   const updateLastMessage = useCallback((content: string) => {
     setMessages((prev) => {
@@ -125,7 +116,7 @@ export default function ChatInterface({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            title: content.slice(0, 30) + (content.length > 30 ? '...' : ''), 
+            title: content.slice(0, 40) + (content.length > 40 ? '...' : ''), 
             modelId: selectedModel,
             messages: [userMessage]
           }),
@@ -136,12 +127,6 @@ export default function ChatInterface({
           setConversationId(currentConvId);
           window.history.replaceState(null, '', `/chat/${currentConvId}`);
         }
-      } else {
-        await fetch(`/api/conversations/${currentConvId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: nextMessages }),
-        });
       }
 
       const response = await fetch('/api/chat', {
@@ -166,7 +151,7 @@ export default function ChatInterface({
         modelId: selectedModel
       };
       
-      setMessages([...nextMessages, assistantMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
       streamingBufferRef.current = '';
 
       const flush = () => {
@@ -187,7 +172,6 @@ export default function ChatInterface({
         }
       }
 
-      // Final flush
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -204,115 +188,73 @@ export default function ChatInterface({
       }
 
     } catch (error: any) {
-      toast.error(error.message || 'Error in chat interface');
+      toast.error(error.message || 'Error occurred');
       console.error(error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleRegenerate = useCallback(() => {
-    const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
-    if (lastUserMessage) {
-      if (messages[messages.length - 1].role === 'assistant') {
-        setMessages(prev => prev.slice(0, -1));
-      }
-      handleSend(lastUserMessage.content, lastUserMessage.imageUrl);
-    }
-  }, [messages, handleSend]);
-
   const isVisionCapable = useMemo(() => {
     return getModelById(selectedModel)?.vision || false;
   }, [selectedModel, getModelById]);
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'Good morning';
+    if (hour >= 12 && hour < 17) return 'Good afternoon';
+    if (hour >= 17 && hour < 24) return 'Good evening';
+    return 'Good night';
+  };
+
+  const userName = session?.user?.name ? `, ${session.user.name.split(' ')[0]}` : '';
+
   return (
-    <div className="flex flex-col h-full bg-background overflow-hidden relative">
-      <header className="flex items-center justify-between h-14 px-4 sm:px-6 border-b border-white/5 bg-background/50 backdrop-blur-xl z-20 shrink-0">
-        <div className="flex items-center gap-2 sm:gap-3">
+    <div className="flex flex-col h-full bg-[#0d0d0d] overflow-hidden relative font-inter">
+      {/* Minimal Top Bar */}
+      <header className="flex items-center justify-between h-14 px-4 shrink-0 z-40">
+        <div className="flex items-center gap-2">
           <button 
             onClick={toggle}
-            className="lg:hidden p-2 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
+            className="lg:hidden p-1.5 rounded-md hover:bg-[#1a1a1a] text-[#6b7280] transition-colors"
           >
-            <Menu className="h-4 w-4" />
+            <Menu className="h-5 w-5" />
           </button>
-          <div className="hidden sm:flex p-1 rounded-lg bg-accent/10">
-            <Sparkles className="h-4 w-4 text-accent" />
-          </div>
-          <span className="text-[10px] sm:text-xs font-bold text-foreground tracking-tight uppercase font-mono truncate max-w-[100px] sm:max-w-none">
-            {conversationId ? 'SessionActive' : 'NewInterface'}
-          </span>
+          <ModelSelector 
+            currentModel={selectedModel} 
+            onSelect={setSelectedModel} 
+          />
         </div>
-        <ModelSelector 
-          currentModel={selectedModel} 
-          onSelect={setSelectedModel} 
-        />
+
+        <button 
+          onClick={() => router.push('/chat')}
+          className="p-1.5 rounded-md hover:bg-[#1a1a1a] text-[#9ca3af] transition-colors"
+          title="New chat"
+        >
+          <SquarePen className="h-[18px] w-[18px]" />
+        </button>
       </header>
 
       <div 
         ref={scrollAreaRef}
-        className="flex-1 overflow-y-auto scroll-smooth scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent relative"
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto scrollbar-none relative"
       >
-        <div className="sticky top-0 left-0 right-0 h-10 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none" />
-
-        <div className="max-w-4xl mx-auto w-full">
+        <div className="max-w-[680px] mx-auto w-full h-full px-4">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] px-4 text-center">
+            <div className="flex flex-col items-center justify-center min-h-full pb-32">
               <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="space-y-8"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="w-full text-center"
               >
-                <div className="relative">
-                  <Sparkles className="h-24 w-24 text-accent/5 mx-auto" />
-                  <motion.div 
-                    animate={{ opacity: [0.2, 0.4, 0.2] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    <Sparkles className="h-12 w-12 text-accent/20" />
-                  </motion.div>
-                </div>
-                
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-bold tracking-tight text-foreground">Start a conversation</h2>
-                  <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                    Choose a model and explore the boundaries of uncensored AI.
-                  </p>
-                </div>
-
-                <motion.div 
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: {
-                      opacity: 1,
-                      transition: { staggerChildren: 0.1 }
-                    }
-                  }}
-                  className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl w-full"
-                >
-                  {EXAMPLE_PROMPTS.map((item, idx) => (
-                    <motion.button
-                      key={idx}
-                      variants={{
-                        hidden: { opacity: 0, y: 10 },
-                        visible: { opacity: 1, y: 0 }
-                      }}
-                      onClick={() => handleSend(item.prompt)}
-                      className="group flex items-center gap-4 rounded-xl border border-white/5 bg-surface p-4 text-left transition-all hover:border-accent/30 hover:bg-surface/80"
-                    >
-                      <div className="p-2 rounded-lg bg-white/5 group-hover:bg-accent/10 transition-colors">
-                        <item.icon className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />
-                      </div>
-                      <div>
-                        <h3 className="text-xs font-bold text-foreground">{item.title}</h3>
-                        <p className="text-[10px] text-muted-foreground truncate w-full max-w-[150px]">{item.prompt}</p>
-                      </div>
-                    </motion.button>
-                  ))}
-                </motion.div>
+                <h2 className="text-[28px] font-medium text-[#f9fafb] tracking-tight">
+                  {getGreeting()}{userName}.
+                </h2>
+                <p className="text-[16px] text-[#6b7280] mt-2">
+                  How can I help you today?
+                </p>
               </motion.div>
             </div>
           ) : (
@@ -322,7 +264,7 @@ export default function ChatInterface({
                 width: '100%',
                 position: 'relative',
               }}
-              className="py-8 pb-32"
+              className="pt-6 pb-40"
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const m = messages[virtualRow.index];
@@ -342,7 +284,7 @@ export default function ChatInterface({
                     <MessageBubble 
                       message={m} 
                       isLast={virtualRow.index === messages.length - 1}
-                      onRegenerate={handleRegenerate}
+                      onRegenerate={() => handleSend(messages[messages.length-2].content, messages[messages.length-2].imageUrl)}
                     />
                   </div>
                 );
@@ -357,26 +299,35 @@ export default function ChatInterface({
                     transform: `translateY(${rowVirtualizer.getTotalSize()}px)`,
                   }}
                 >
-                  <MessageBubble 
-                    message={{ role: 'assistant', content: '', modelId: selectedModel }} 
-                  />
+                  <MessageBubble message={{ role: 'assistant', content: '' }} />
                 </div>
               )}
-              <div ref={messagesEndRef} className="h-32" />
+              <div ref={messagesEndRef} className="h-4" />
             </div>
           )}
         </div>
+
+        {/* Scroll to bottom button */}
+        <AnimatePresence>
+          {showScrollButton && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              onClick={() => scrollToBottom()}
+              className="fixed bottom-32 right-1/2 translate-x-[340px] transform hidden lg:flex h-8 w-8 items-center justify-center rounded-full bg-[#161616] border border-[#2a2a2a] text-[#6b7280] hover:text-[#f9fafb] transition-all shadow-lg z-20"
+            >
+              <ArrowDown className="h-4 w-4" />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/90 to-transparent pt-20 pb-4 z-20 pointer-events-none">
-        <div className="max-w-4xl mx-auto w-full flex justify-center pointer-events-auto">
-          <MessageInput 
-            onSend={handleSend} 
-            isLoading={isLoading}
-            isVisionCapable={isVisionCapable}
-          />
-        </div>
-      </div>
+      <MessageInput 
+        onSend={handleSend} 
+        isLoading={isLoading}
+        isVisionCapable={isVisionCapable}
+      />
     </div>
   );
 }
