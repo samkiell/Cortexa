@@ -3,5 +3,5 @@ import { getModels } from '@/lib/models-data';
 
 export default async function NewChatPage() {
   const models = await getModels();
-  return <ChatInterface key="new" initialModels={models} />;
+  return <ChatInterface initialModels={models} />;
 }

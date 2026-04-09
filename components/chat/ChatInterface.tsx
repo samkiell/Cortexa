@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SquarePen, ArrowDown, Menu } from 'lucide-react';
+import { SquarePen, ArrowDown, Menu, PanelLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSidebar } from '@/components/providers/SidebarProvider';
 import { useModels } from '@/contexts/ModelContext';
@@ -34,12 +34,21 @@ export default function ChatInterface({
   initialMessages = [], 
   conversationId: initialConvId,
 }: ChatInterfaceProps) {
-  const { toggle } = useSidebar();
+  const { isOpen, setIsOpen, toggle } = useSidebar();
   const { data: session } = useSession();
   const { models, getModelById, isLoading: isModelsLoading } = useModels();
+  const pathname = usePathname();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [conversationId, setConversationId] = useState<string | undefined>(initialConvId);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Reset when navigating to 'New Chat'
+  useEffect(() => {
+    if (pathname === '/chat' && messages.length > 0) {
+      setMessages([]);
+      setConversationId(undefined);
+    }
+  }, [pathname]);
   const [selectedModel, setSelectedModel] = useState('');
   const [showScrollButton, setShowScrollButton] = useState(false);
   
@@ -80,10 +89,11 @@ export default function ChatInterface({
   }, []);
 
   useEffect(() => {
-    if (messages.length > 0 && !isLoading) {
-      scrollToBottom('smooth');
+    // Only scroll automatically on mount/reset if there's history
+    if (messages.length > 0 && messages[messages.length-1].role === 'user' && !isLoading) {
+       scrollToBottom('smooth');
     }
-  }, [messages.length, isLoading, scrollToBottom]);
+  }, [messages.length, scrollToBottom]); 
 
   const handleScroll = useCallback(() => {
     if (scrollAreaRef.current) {
@@ -103,65 +113,24 @@ export default function ChatInterface({
     });
   }, []);
 
-  const handleDeleteMessage = async (index: number) => {
-    const updatedMessages = messages.filter((_, i) => i !== index);
-    setMessages(updatedMessages);
-
-    if (conversationId) {
-      try {
-        await fetch(`/api/conversations/${conversationId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: updatedMessages.map(m => ({ role: m.role, content: m.content })) }),
-        });
-      } catch (error) {
-        console.error('Failed to update conversation after delete:', error);
-      }
-    }
-  };
-
-  const handleEditMessage = async (index: number, newContent: string) => {
-    const updatedMessages = [...messages];
-    updatedMessages[index] = { ...updatedMessages[index], content: newContent };
-    setMessages(updatedMessages);
-
-    if (conversationId) {
-      try {
-        await fetch(`/api/conversations/${conversationId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: updatedMessages.map(m => ({ role: m.role, content: m.content })) }),
-        });
-      } catch (error) {
-        console.error('Failed to update conversation after edit:', error);
-      }
-    }
-  };
-
-  const handleSend = async (content: string, imageUrl?: string, searchEnabled?: boolean) => {
-    if (!content.trim() && !imageUrl) return;
-
-    const userMessage: Message = { 
-      role: 'user', 
-      content, 
-      imageUrl, 
-      timestamp: new Date() 
-    };
-    
-    const nextMessages = [...messages, userMessage];
-    setMessages(nextMessages);
+  const executeChat = async (currentMessages: Message[], convId: string | undefined, imageUrl?: string, searchEnabled?: boolean) => {
     setIsLoading(true);
-
+    // Explicitly scroll to user message
+    setTimeout(() => scrollToBottom('smooth'), 50);
+    
     try {
-      let currentConvId = conversationId;
+      let currentConvId = convId;
+      const lastUserMsg = currentMessages[currentMessages.length - 1];
+
+      // New conversation handling
       if (!currentConvId) {
         const createRes = await fetch('/api/conversations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            title: content.slice(0, 40) + (content.length > 40 ? '...' : ''), 
+            title: lastUserMsg.content.slice(0, 40) + (lastUserMsg.content.length > 40 ? '...' : ''), 
             modelId: selectedModel,
-            messages: [userMessage]
+            messages: [lastUserMsg]
           }),
         });
         if (createRes.ok) {
@@ -177,8 +146,8 @@ export default function ChatInterface({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           modelId: selectedModel, 
-          messages: nextMessages.map(m => ({ role: m.role, content: m.content })),
-          imageBase64: imageUrl,
+          messages: currentMessages.map(m => ({ role: m.role, content: m.content })),
+          imageBase64: imageUrl || lastUserMsg.imageUrl,
           searchEnabled
         }),
       });
@@ -200,7 +169,6 @@ export default function ChatInterface({
 
       const flush = () => {
         updateLastMessage({ content: streamingBufferRef.current });
-        scrollToBottom('auto');
         animationFrameRef.current = null;
       };
 
@@ -210,8 +178,6 @@ export default function ChatInterface({
         if (done) break;
 
         const chunk = decoder.decode(value);
-        
-        // Handle SSE search events
         if (chunk.startsWith('data: ')) {
           const lines = chunk.split('\n\n').filter(Boolean);
           for (const line of lines) {
@@ -225,25 +191,17 @@ export default function ChatInterface({
                 updateLastMessage({ isSearching: false, sources: data.sources });
               }
             } catch (e) {
-              // Not JSON, probably plain text token
               streamingBufferRef.current += jsonStr;
-              if (!animationFrameRef.current) {
-                animationFrameRef.current = requestAnimationFrame(flush);
-              }
+              if (!animationFrameRef.current) animationFrameRef.current = requestAnimationFrame(flush);
             }
           }
         } else {
-          // Plain text token
           streamingBufferRef.current += chunk;
-          if (!animationFrameRef.current) {
-            animationFrameRef.current = requestAnimationFrame(flush);
-          }
+          if (!animationFrameRef.current) animationFrameRef.current = requestAnimationFrame(flush);
         }
       }
 
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       flush();
 
       // Final save to DB
@@ -253,15 +211,12 @@ export default function ChatInterface({
           content: streamingBufferRef.current, 
           modelId: selectedModel, 
           timestamp: new Date(),
-          sources: (messages[messages.length-1] as any)?.sources // Access via ref or state
         };
         
         await fetch(`/api/conversations/${currentConvId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            messages: [...nextMessages, lastMsg] 
-          }),
+          body: JSON.stringify({ messages: [...currentMessages, lastMsg] }),
         });
       }
 
@@ -271,6 +226,63 @@ export default function ChatInterface({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDeleteMessage = async (index: number) => {
+    const updatedMessages = messages.filter((_, i) => i !== index);
+    setMessages(updatedMessages);
+
+    if (conversationId) {
+      try {
+        await fetch(`/api/conversations/${conversationId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: updatedMessages.map(m => ({ role: m.role, content: m.content })) }),
+        });
+      } catch (error) {
+        console.error('Failed to update conversation after delete:', error);
+      }
+    }
+  };
+
+  const handleEditMessage = async (index: number, newContent: string) => {
+    const messageToEdit = messages[index];
+    if (!messageToEdit) return;
+
+    if (messageToEdit.role === 'user') {
+      // Truncate and resend
+      const truncatedMessages = messages.slice(0, index + 1);
+      truncatedMessages[index] = { ...messageToEdit, content: newContent };
+      setMessages(truncatedMessages);
+      executeChat(truncatedMessages, conversationId);
+    } else {
+      // Just update assistant message
+      const updatedMessages = [...messages];
+      updatedMessages[index] = { ...messageToEdit, content: newContent };
+      setMessages(updatedMessages);
+      if (conversationId) {
+        await fetch(`/api/conversations/${conversationId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: updatedMessages.map(m => ({ role: m.role, content: m.content })) }),
+        });
+      }
+    }
+  };
+
+  const handleSend = async (content: string, imageUrl?: string, searchEnabled?: boolean) => {
+    if (!content.trim() && !imageUrl) return;
+
+    const userMessage: Message = { 
+      role: 'user', 
+      content, 
+      imageUrl, 
+      timestamp: new Date() 
+    };
+    
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
+    executeChat(nextMessages, conversationId, imageUrl, searchEnabled);
   };
 
   const modelInfo = useMemo(() => {
@@ -295,6 +307,15 @@ export default function ChatInterface({
       {/* Minimal Top Bar */}
       <header className="flex items-center justify-between h-14 px-4 shrink-0 z-40">
         <div className="flex items-center gap-2">
+          {!isOpen && (
+            <button 
+              onClick={() => setIsOpen(true)}
+              className="hidden lg:block p-1.5 rounded-md hover:bg-[#1a1a1a] text-[#6b7280] transition-colors"
+              title="Open sidebar"
+            >
+              <PanelLeft className="h-5 w-5" />
+            </button>
+          )}
           <button 
             onClick={toggle}
             className="lg:hidden p-1.5 rounded-md hover:bg-[#1a1a1a] text-[#6b7280] transition-colors"

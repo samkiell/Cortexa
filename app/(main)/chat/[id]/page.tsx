@@ -38,7 +38,6 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
 
     return (
       <ChatInterface 
-        key={id}
         initialMessages={initialMessages} 
         conversationId={id} 
         initialModels={models}

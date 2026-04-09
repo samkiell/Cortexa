@@ -13,7 +13,8 @@ import {
   Trash2,
   Settings,
   X,
-  SquarePen
+  SquarePen,
+  PanelLeftClose
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { isToday, isWithinInterval, subDays, startOfDay } from 'date-fns';
@@ -68,7 +69,11 @@ export default function ConversationSidebar() {
     const sevenDaysAgo = subDays(startOfDay(now), 7);
 
     conversations.forEach(conv => {
-      const date = new Date(conv.updatedAt || conv.createdAt);
+      const dateStr = conv.updatedAt || conv.createdAt;
+      if (!dateStr) return; // Skip if no date
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return; // Skip invalid dates
+
       if (isToday(date)) {
         groups.Today.push(conv);
       } else if (date >= sevenDaysAgo) {
@@ -131,14 +136,21 @@ export default function ConversationSidebar() {
       <motion.aside
         initial={false}
         animate={{ 
-          width: isMobile ? (isOpen ? 240 : 0) : 240,
+          width: isOpen ? 240 : 0,
           x: isMobile ? (isOpen ? 0 : -240) : 0
         }}
-        className="fixed inset-y-0 left-0 z-40 flex flex-col border-r border-[#1f1f1f] bg-[#0d0d0d] overflow-hidden transition-all duration-300 lg:relative lg:w-[240px]"
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-[#1f1f1f] bg-[#0d0d0d] overflow-hidden transition-all duration-300 lg:relative ${!isOpen && !isMobile ? 'border-r-0' : ''}`}
       >
-        {/* App Logo/Name */}
-        <div className="flex h-12 items-center px-4">
+        {/* App Logo/Name & Toggle */}
+        <div className="flex h-12 items-center justify-between px-4 shrink-0">
           <img src="/landscape_logo.png" alt="Cortexa" className="h-[21px] w-auto opacity-90" />
+          <button 
+            onClick={() => setIsOpen(false)}
+            className="p-1.5 rounded-md hover:bg-[#1a1a1a] text-[#6b7280] transition-colors"
+            title="Close sidebar"
+          >
+            <PanelLeftClose className="h-4 w-4" />
+          </button>
         </div>
 
         {/* New Chat Button */}
