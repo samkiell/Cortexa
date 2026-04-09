@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   description: "Next-generation AI chat platform powered by Featherless AI.",
   icons: {
     icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
   openGraph: {
     images: [{ url: "/og-image.png" }],

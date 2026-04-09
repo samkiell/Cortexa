@@ -14,7 +14,8 @@ import {
   Settings,
   X,
   SquarePen,
-  PanelLeftClose
+  PanelLeftClose,
+  LogOut
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { isToday, isWithinInterval, subDays, startOfDay } from 'date-fns';
@@ -209,29 +210,42 @@ export default function ConversationSidebar() {
         </div>
 
         {/* User / Settings Footer */}
-        <div className="mt-auto border-t border-[#1f1f1f] p-3 flex items-center justify-between group/footer">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-7 w-7 rounded-full bg-[#1d4ed8] flex items-center justify-center shrink-0 overflow-hidden">
-               {session?.user?.image ? (
-                 <img src={session.user.image} alt="" className="h-full w-full object-cover" />
-               ) : (
-                 <span className="text-[11px] font-medium text-[#93c5fd]">
-                   {session?.user?.name ? (
-                     session.user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-                   ) : 'U'}
-                 </span>
-               )}
+        <div className="mt-auto border-t border-[#1f1f1f] p-3 flex flex-col gap-3 group/footer">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="h-7 w-7 rounded-full bg-[#1d4ed8] flex items-center justify-center shrink-0 overflow-hidden">
+                {session?.user?.image ? (
+                  <img src={session.user.image} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-[11px] font-medium text-[#93c5fd]">
+                    {session?.user?.name ? (
+                      session.user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                    ) : 'U'}
+                  </span>
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-[13px] font-medium text-[#d1d5db] truncate">{session?.user?.name || 'User'}</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-[13px] font-medium text-[#d1d5db] truncate">{session?.user?.name || 'User'}</p>
+            
+            <div className="flex items-center gap-1">
+              <Link
+                href="/settings"
+                className="p-1.5 rounded-md hover:bg-[#1a1a1a] text-[#6b7280] hover:text-[#d1d5db] transition-colors"
+                title="Settings"
+              >
+                <Settings className="h-4 w-4" />
+              </Link>
+              <button 
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                className="p-1.5 rounded-md hover:bg-[#1a1a1a] text-[#6b7280] hover:text-red-400 transition-colors"
+                title="Log out"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
           </div>
-          <button 
-            className="p-1.5 rounded-md hover:bg-[#1a1a1a] text-[#6b7280] hover:text-[#d1d5db] transition-colors"
-            title="Settings"
-          >
-            <Settings className="h-4 w-4" />
-          </button>
         </div>
       </motion.aside>
     </>
