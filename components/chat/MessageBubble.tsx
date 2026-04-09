@@ -3,10 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Copy, 
   Check, 
-  ThumbsUp, 
-  ThumbsDown, 
   RefreshCw,
-  MoreHorizontal,
   Globe,
   ExternalLink,
   Pencil,
@@ -37,7 +34,6 @@ interface MessageBubbleProps {
 
 const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerate, onDelete, onEdit }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
-  const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(message.content);
   const editRef = useRef<HTMLTextAreaElement>(null);
@@ -172,7 +168,7 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
                   <button onClick={handleSaveEdit} className="px-3 py-1 rounded-md text-[12px] bg-[#3b82f6] text-white transition-all">Save</button>
                 </div>
               </div>
-            ) : (
+            ) : message.content ? (
               <>
                 <div className="prose prose-invert prose-sm max-w-none 
                   prose-p:leading-[1.8] prose-p:mb-4 last:prose-p:mb-0
@@ -303,33 +299,6 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
                     title="Copy"
                   >
                     {isCopied ? <Check className="h-[15px] w-[15px]" /> : <Copy className="h-[15px] w-[15px]" />}
-                  </button>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="p-1 px-1.5 rounded hover:bg-[#1a1a1a] text-[#6b7280] hover:text-[#d1d5db] transition-all"
-                    title="Edit"
-                  >
-                    <Pencil className="h-[14px] w-[14px]" />
-                  </button>
-                  <button
-                    onClick={onDelete}
-                    className="p-1 px-1.5 rounded hover:bg-[#1a1a1a] text-[#6b7280] hover:text-red-400 transition-all"
-                    title="Delete"
-                  >
-                    <Trash2 className="h-[14px] w-[14px]" />
-                  </button>
-                  <div className="w-[1px] h-3 bg-[#2a2a2a] mx-1" />
-                  <button
-                    onClick={() => setFeedback(feedback === 'up' ? null : 'up')}
-                    className={`p-1 px-1.5 rounded hover:bg-[#1a1a1a] transition-all ${feedback === 'up' ? 'text-[#3b82f6]' : 'text-[#6b7280] hover:text-[#d1d5db]'}`}
-                  >
-                    <ThumbsUp className="h-[15px] w-[15px]" />
-                  </button>
-                  <button
-                    onClick={() => setFeedback(feedback === 'down' ? null : 'down')}
-                    className={`p-1 px-1.5 rounded hover:bg-[#1a1a1a] transition-all ${feedback === 'down' ? 'text-gray-400' : 'text-[#6b7280] hover:text-[#d1d5db]'}`}
-                  >
-                    <ThumbsDown className="h-[15px] w-[15px]" />
                   </button>
                   {isLast && onRegenerate && (
                     <button

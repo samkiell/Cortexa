@@ -188,6 +188,5 @@ export default function MessageInput({ onSend, isLoading, isVisionCapable, suppo
           </p>
         </div>
       </div>
-    </div>
   );
 }

@@ -69,22 +69,27 @@ export default function ChatInterface({
     overscan: 5,
   });
 
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior });
+  const scrollToBottom = useCallback((behavior: 'auto' | 'smooth' = 'smooth') => {
+    if (scrollAreaRef.current) {
+      const scrollHeight = scrollAreaRef.current.scrollHeight;
+      scrollAreaRef.current.scrollTo({
+        top: scrollHeight,
+        behavior
+      });
     }
   }, []);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom();
+    if (messages.length > 0 && !isLoading) {
+      scrollToBottom('smooth');
     }
-  }, [messages.length, scrollToBottom]);
+  }, [messages.length, isLoading, scrollToBottom]);
 
   const handleScroll = useCallback(() => {
     if (scrollAreaRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
-      setShowScrollButton(scrollHeight - scrollTop - clientHeight > 300);
+      // Show button if we are more than 150px from the bottom
+      setShowScrollButton(scrollHeight - scrollTop - clientHeight > 150);
     }
   }, []);
 
@@ -195,6 +200,7 @@ export default function ChatInterface({
 
       const flush = () => {
         updateLastMessage({ content: streamingBufferRef.current });
+        scrollToBottom('auto');
         animationFrameRef.current = null;
       };
 
@@ -392,15 +398,15 @@ export default function ChatInterface({
           )}
         </div>
 
-        {/* Scroll to bottom button */}
+        {/* Scroll to bottom button - Now relative to chat column */}
         <AnimatePresence>
           {showScrollButton && (
             <motion.button
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              onClick={() => scrollToBottom()}
-              className="fixed bottom-32 right-1/2 translate-x-[340px] transform hidden lg:flex h-8 w-8 items-center justify-center rounded-full bg-[#161616] border border-[#2a2a2a] text-[#6b7280] hover:text-[#f9fafb] transition-all shadow-lg z-20"
+              onClick={() => scrollToBottom('smooth')}
+              className="absolute bottom-6 right-6 h-9 w-9 flex items-center justify-center rounded-full bg-[#161616] border border-[#2a2a2a] text-[#6b7280] hover:text-[#f9fafb] transition-all shadow-xl z-50 lg:flex"
             >
               <ArrowDown className="h-4 w-4" />
             </motion.button>
