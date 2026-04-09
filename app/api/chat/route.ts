@@ -19,10 +19,14 @@ export async function POST(req: Request) {
       baseURL: 'https://api.featherless.ai/v1',
     });
 
-    // Handle multimodal messages if image is present
+    // Handle multimodal messages ONLY if image is present AND model is vision-capable
+    const isVisionModel = 
+      modelId.toLowerCase().includes('vision') || 
+      modelId.toLowerCase().includes('pixtral') || 
+      modelId.toLowerCase().includes('llava');
+
     const formattedMessages = messages.map((m: any, idx: number) => {
-      if (idx === messages.length - 1 && imageBase64) {
-        // Ensure we don't double-prefix if the client sent the full data URL
+      if (idx === messages.length - 1 && imageBase64 && isVisionModel) {
         const base64Data = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
         return {
           role: m.role,
@@ -42,16 +46,23 @@ export async function POST(req: Request) {
       max_tokens: 2048,
     });
 
-    // Convert the response into a friendly text-stream
     const stream = new ReadableStream({
       async start(controller) {
-        for await (const chunk of response) {
-          const content = chunk.choices[0]?.delta?.content || '';
-          if (content) {
-            controller.enqueue(new TextEncoder().encode(content));
+        const encoder = new TextEncoder();
+        try {
+          for await (const chunk of response) {
+            const content = chunk.choices[0]?.delta?.content || '';
+            if (content) {
+              controller.enqueue(encoder.encode(content));
+            }
           }
+        } catch (err: any) {
+          console.error('Streaming error in route:', err);
+          // Don't kill the whole stream if possible, but we must signal the error
+          controller.error(err);
+        } finally {
+          controller.close();
         }
-        controller.close();
       },
     });
 

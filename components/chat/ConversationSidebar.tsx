@@ -42,7 +42,9 @@ export default function ConversationSidebar() {
 
   useEffect(() => {
     const fetchConversations = async () => {
-      if (!session || !isOpen) return;
+      // Fetch if session exists AND (on desktop OR the sidebar drawer is open on mobile)
+      if (!session || (isMobile && !isOpen)) return;
+      
       try {
         const res = await fetch('/api/conversations');
         if (res.ok) {
@@ -57,7 +59,7 @@ export default function ConversationSidebar() {
     };
 
     fetchConversations();
-  }, [session, pathname, isOpen]);
+  }, [session, pathname, isOpen, isMobile]);
 
   const handleDeleteClick = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
