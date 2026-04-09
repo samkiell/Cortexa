@@ -1,25 +1,18 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronDown, 
   Search, 
-  Sparkles, 
   Eye, 
   ShieldAlert, 
   Cpu, 
   Check,
-  BrainCircuit
+  BrainCircuit,
+  Zap
 } from 'lucide-react';
-
-interface Model {
-  id: string;
-  name: string;
-  isVision: boolean;
-  isUncensored: boolean;
-  isReasoning: boolean;
-}
+import { useModels } from '@/contexts/ModelContext';
 
 interface ModelSelectorProps {
   currentModel: string;
@@ -29,27 +22,10 @@ interface ModelSelectorProps {
 export default function ModelSelector({ currentModel, onSelect }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [models, setModels] = useState<Model[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { models, isLoading } = useModels();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchModels = async () => {
-      try {
-        const res = await fetch('/api/models');
-        if (res.ok) {
-          const data = await res.json();
-          setModels(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch models', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchModels();
-
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -61,15 +37,15 @@ export default function ModelSelector({ currentModel, onSelect }: ModelSelectorP
   }, []);
 
   const filteredModels = models.filter((m) =>
+    m.name.toLowerCase().includes(search.toLowerCase()) || 
     m.id.toLowerCase().includes(search.toLowerCase())
   );
 
-  const selectedModel = models.find((m) => m.id === currentModel) || {
+  const selectedModel = models.find((m) => m.id === currentModel) || models[4] || {
     id: currentModel,
-    name: currentModel.split('/').pop() || currentModel,
-    isVision: false,
-    isUncensored: false,
-    isReasoning: false,
+    name: 'Select Model',
+    vision: false,
+    tags: [],
   };
 
   return (
@@ -122,33 +98,42 @@ export default function ModelSelector({ currentModel, onSelect }: ModelSelectorP
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className={`text-sm font-semibold truncate ${currentModel === model.id ? 'text-accent' : 'text-text-custom group-hover:text-white'}`}>
-                        {model.name}
-                      </span>
-                      {currentModel === model.id && <Check className="h-4 w-4 text-accent" />}
+                      <div className="flex flex-col min-w-0">
+                        <span className={`text-sm font-semibold truncate ${currentModel === model.id ? 'text-accent' : 'text-text-custom group-hover:text-white'}`}>
+                          {model.name}
+                        </span>
+                        <span className="text-[10px] text-muted truncate">{model.description}</span>
+                      </div>
+                      {currentModel === model.id && <Check className="h-4 w-4 text-accent flex-shrink-0" />}
                     </div>
                     
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {model.isVision && (
-                        <span className="inline-flex items-center gap-1 rounded bg-accent/10 px-1.5 py-0.5 text-[10px] uppercase font-bold text-accent">
-                          <Eye className="h-2.5 w-2.5" />
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      <span className="inline-flex items-center gap-1 rounded bg-white/5 px-1.5 py-0.5 text-[9px] uppercase font-bold text-muted-foreground">
+                        {model.size}
+                      </span>
+                      {model.vision && (
+                        <span className="inline-flex items-center gap-1 rounded bg-accent/10 px-1.5 py-0.5 text-[9px] uppercase font-bold text-accent">
+                          <Eye className="h-2 w-2" />
                           Vision
                         </span>
                       )}
-                      {model.isUncensored && (
-                        <span className="inline-flex items-center gap-1 rounded bg-red-500/10 px-1.5 py-0.5 text-[10px] uppercase font-bold text-red-500">
-                          <ShieldAlert className="h-2.5 w-2.5" />
+                      {model.tags.includes('uncensored') && (
+                        <span className="inline-flex items-center gap-1 rounded bg-red-500/10 px-1.5 py-0.5 text-[9px] uppercase font-bold text-red-500">
+                          <ShieldAlert className="h-2 w-2" />
                           Uncensored
                         </span>
                       )}
-                      {model.isReasoning && (
-                        <span className="inline-flex items-center gap-1 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] uppercase font-bold text-green-500">
-                          <BrainCircuit className="h-2.5 w-2.5" />
-                          Reasoning
+                      {model.tags.includes('abliterated') && (
+                        <span className="inline-flex items-center gap-1 rounded bg-green-500/10 px-1.5 py-0.5 text-[9px] uppercase font-bold text-green-500">
+                          <BrainCircuit className="h-2 w-2" />
+                          Abliterated
                         </span>
                       )}
-                      {!model.isVision && !model.isUncensored && !model.isReasoning && (
-                        <span className="text-[10px] text-muted">Text completion</span>
+                      {model.id.includes('8B') && (
+                        <span className="inline-flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] uppercase font-bold text-amber-500">
+                          <Zap className="h-2 w-2" />
+                          Fast
+                        </span>
                       )}
                     </div>
                   </button>

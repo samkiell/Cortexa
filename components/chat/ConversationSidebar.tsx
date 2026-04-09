@@ -37,7 +37,7 @@ export default function ConversationSidebar() {
 
   useEffect(() => {
     const fetchConversations = async () => {
-      if (!session) return;
+      if (!session || !isOpen) return;
       try {
         const res = await fetch('/api/conversations');
         if (res.ok) {
@@ -52,7 +52,7 @@ export default function ConversationSidebar() {
     };
 
     fetchConversations();
-  }, [session, pathname]);
+  }, [session, pathname, isOpen]);
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();

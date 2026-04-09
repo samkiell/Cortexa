@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Copy, 
@@ -30,7 +30,7 @@ interface MessageBubbleProps {
   onRegenerate?: () => void;
 }
 
-export default function MessageBubble({ message, isLast, onRegenerate }: MessageBubbleProps) {
+const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerate }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isLiked, setIsLiked] = useState<boolean | null>(null);
   const [showLightbox, setShowLightbox] = useState(false);
@@ -192,4 +192,6 @@ export default function MessageBubble({ message, isLast, onRegenerate }: Message
       </AnimatePresence>
     </div>
   );
-}
+});
+
+export default MessageBubble;

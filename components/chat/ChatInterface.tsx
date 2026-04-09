@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, MessageSquare, Code, PenTool, Lightbulb, Menu } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSidebar } from '@/components/providers/SidebarProvider';
+import { useModels } from '@/contexts/ModelContext';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import ModelSelector from './ModelSelector';
@@ -21,7 +23,6 @@ interface Message {
 interface ChatInterfaceProps {
   initialMessages?: Message[];
   conversationId?: string;
-  initialModels?: any[];
 }
 
 const EXAMPLE_PROMPTS = [
@@ -34,43 +35,28 @@ const EXAMPLE_PROMPTS = [
 export default function ChatInterface({ 
   initialMessages = [], 
   conversationId: initialConvId,
-  initialModels = []
 }: ChatInterfaceProps) {
   const { toggle } = useSidebar();
+  const { models, getModelById } = useModels();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [conversationId, setConversationId] = useState<string | undefined>(initialConvId);
   const [isLoading, setIsLoading] = useState(false);
-  const [models, setModels] = useState<any[]>(initialModels);
   const [selectedModel, setSelectedModel] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const streamingBufferRef = useRef('');
+  const animationFrameRef = useRef<number | null>(null);
   const router = useRouter();
 
+  // Set default model once models are loaded
   useEffect(() => {
-    if (models.length > 0) {
-      if (!selectedModel) {
-        setSelectedModel(models[0].id);
-      }
-      return;
+    if (models.length > 0 && !selectedModel) {
+      setSelectedModel(models[4]?.id || models[0]?.id);
     }
-
-    const fetchModels = async () => {
-      try {
-        const res = await fetch('/api/models');
-        if (res.ok) {
-          const data = await res.json();
-          setModels(data);
-          if (!selectedModel && data.length > 0) {
-            setSelectedModel(data[0].id);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch models');
-      }
-    };
-    fetchModels();
   }, [models, selectedModel]);
 
+  // Sync model with conversation
   useEffect(() => {
     if (conversationId) {
       const fetchConv = async () => {
@@ -88,13 +74,35 @@ export default function ChatInterface({
     }
   }, [conversationId]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Virtualization
+  const rowVirtualizer = useVirtualizer({
+    count: messages.length,
+    getScrollElement: () => scrollAreaRef.current,
+    estimateSize: () => 100, // Estimated height of a message bubble
+    overscan: 5,
+  });
+
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior });
+    }
+  }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages.length, scrollToBottom]);
+
+  const updateLastMessage = useCallback((content: string) => {
+    setMessages((prev) => {
+      const last = prev[prev.length - 1];
+      if (last && last.role === 'assistant') {
+        return [...prev.slice(0, -1), { ...last, content }];
+      }
+      return prev;
+    });
+  }, []);
 
   const handleSend = async (content: string, imageUrl?: string) => {
     if (!content.trim() && !imageUrl) return;
@@ -106,8 +114,8 @@ export default function ChatInterface({
       timestamp: new Date() 
     };
     
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
     setIsLoading(true);
 
     try {
@@ -126,13 +134,13 @@ export default function ChatInterface({
           const conv = await createRes.json();
           currentConvId = conv._id;
           setConversationId(currentConvId);
-          router.replace(`/chat/${currentConvId}`);
+          window.history.replaceState(null, '', `/chat/${currentConvId}`);
         }
       } else {
         await fetch(`/api/conversations/${currentConvId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: newMessages }),
+          body: JSON.stringify({ messages: nextMessages }),
         });
       }
 
@@ -141,7 +149,7 @@ export default function ChatInterface({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           modelId: selectedModel, 
-          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+          messages: nextMessages.map(m => ({ role: m.role, content: m.content })),
           imageBase64: imageUrl 
         }),
       });
@@ -157,31 +165,40 @@ export default function ChatInterface({
         timestamp: new Date(),
         modelId: selectedModel
       };
-      setMessages([...newMessages, assistantMessage]);
+      
+      setMessages([...nextMessages, assistantMessage]);
+      streamingBufferRef.current = '';
 
-      let accumulatedContent = '';
+      const flush = () => {
+        updateLastMessage(streamingBufferRef.current);
+        animationFrameRef.current = null;
+      };
+
+      const decoder = new TextDecoder();
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const token = new TextDecoder().decode(value);
-        accumulatedContent += token;
+        const token = decoder.decode(value);
+        streamingBufferRef.current += token;
         
-        setMessages((prev) => {
-          const last = prev[prev.length - 1];
-          if (last.role === 'assistant') {
-            return [...prev.slice(0, -1), { ...last, content: accumulatedContent }];
-          }
-          return prev;
-        });
+        if (!animationFrameRef.current) {
+          animationFrameRef.current = requestAnimationFrame(flush);
+        }
       }
+
+      // Final flush
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      flush();
 
       if (currentConvId) {
         await fetch(`/api/conversations/${currentConvId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            messages: [...newMessages, { role: 'assistant', content: accumulatedContent, modelId: selectedModel, timestamp: new Date() }] 
+            messages: [...nextMessages, { role: 'assistant', content: streamingBufferRef.current, modelId: selectedModel, timestamp: new Date() }] 
           }),
         });
       }
@@ -190,29 +207,26 @@ export default function ChatInterface({
       toast.error(error.message || 'Error in chat interface');
       console.error(error);
     } finally {
-      setIsLoading(true); // Small hack to show typing for a brief moment if needed, but actually set to false
       setIsLoading(false);
     }
   };
 
-  const handleRegenerate = () => {
+  const handleRegenerate = useCallback(() => {
     const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
     if (lastUserMessage) {
-      // Remove last assistant message if exists
       if (messages[messages.length - 1].role === 'assistant') {
         setMessages(prev => prev.slice(0, -1));
       }
       handleSend(lastUserMessage.content, lastUserMessage.imageUrl);
     }
-  };
+  }, [messages, handleSend]);
 
-  const isVisionCapable = selectedModel.toLowerCase().includes('vision') || 
-                          selectedModel.toLowerCase().includes('multimodal') ||
-                          models.find(m => m.id === selectedModel)?.isVision;
+  const isVisionCapable = useMemo(() => {
+    return getModelById(selectedModel)?.vision || false;
+  }, [selectedModel, getModelById]);
 
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden relative">
-      {/* Header */}
       <header className="flex items-center justify-between h-14 px-4 sm:px-6 border-b border-white/5 bg-background/50 backdrop-blur-xl z-20 shrink-0">
         <div className="flex items-center gap-2 sm:gap-3">
           <button 
@@ -234,12 +248,10 @@ export default function ChatInterface({
         />
       </header>
 
-      {/* Messages Scroll Area */}
       <div 
         ref={scrollAreaRef}
         className="flex-1 overflow-y-auto scroll-smooth scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent relative"
       >
-        {/* Scroll Fade Overlay */}
         <div className="sticky top-0 left-0 right-0 h-10 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none" />
 
         <div className="max-w-4xl mx-auto w-full">
@@ -304,32 +316,51 @@ export default function ChatInterface({
               </motion.div>
             </div>
           ) : (
-            <div className="flex flex-col py-8 pb-32">
-              <AnimatePresence initial={false}>
-                {messages.map((m, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
+            <div 
+              style={{
+                height: `${rowVirtualizer.getTotalSize()}px`,
+                width: '100%',
+                position: 'relative',
+              }}
+              className="py-8 pb-32"
+            >
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const m = messages[virtualRow.index];
+                return (
+                  <div
+                    key={virtualRow.key}
+                    data-index={virtualRow.index}
+                    ref={rowVirtualizer.measureElement}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      transform: `translateY(${virtualRow.start}px)`,
+                    }}
                   >
                     <MessageBubble 
                       message={m} 
-                      isLast={idx === messages.length - 1}
+                      isLast={virtualRow.index === messages.length - 1}
                       onRegenerate={handleRegenerate}
                     />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                  </div>
+                );
+              })}
               {isLoading && messages[messages.length-1].role === 'user' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${rowVirtualizer.getTotalSize()}px)`,
+                  }}
                 >
                   <MessageBubble 
                     message={{ role: 'assistant', content: '', modelId: selectedModel }} 
                   />
-                </motion.div>
+                </div>
               )}
               <div ref={messagesEndRef} className="h-32" />
             </div>
@@ -337,13 +368,12 @@ export default function ChatInterface({
         </div>
       </div>
 
-      {/* Input Area */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/90 to-transparent pt-20 pb-4 z-20 pointer-events-none">
         <div className="max-w-4xl mx-auto w-full flex justify-center pointer-events-auto">
           <MessageInput 
             onSend={handleSend} 
             isLoading={isLoading}
-            isVisionCapable={!!isVisionCapable}
+            isVisionCapable={isVisionCapable}
           />
         </div>
       </div>
