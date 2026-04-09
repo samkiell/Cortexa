@@ -18,6 +18,7 @@ import {
 import { signOut, useSession } from 'next-auth/react';
 import { formatDistanceToNow } from 'date-fns';
 import { useSidebar } from '@/components/providers/SidebarProvider';
+import Modal from '@/components/ui/Modal';
 
 export default function ConversationSidebar() {
   const { data: session } = useSession();
@@ -27,6 +28,10 @@ export default function ConversationSidebar() {
   const [conversations, setConversations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Modal State
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [targetDeleteId, setTargetDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -54,25 +59,39 @@ export default function ConversationSidebar() {
     fetchConversations();
   }, [session, pathname, isOpen]);
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  const handleDeleteClick = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    // Using simple confirm for now as per instructions to keep it professional but direct
-    if (!confirm('Are you sure you want to delete this conversation?')) return;
+    setTargetDeleteId(id);
+    setDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!targetDeleteId) return;
     try {
-      const res = await fetch(`/api/conversations/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/conversations/${targetDeleteId}`, { method: 'DELETE' });
       if (res.ok) {
-        setConversations(conversations.filter((c) => c._id !== id));
+        setConversations((prev) => prev.filter((c) => c._id !== targetDeleteId));
       }
     } catch (err) {
       console.error('Failed to delete conversation');
+    } finally {
+      setDeleteModalOpen(false);
+      setTargetDeleteId(null);
     }
   };
 
   return (
     <>
+      <Modal 
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Conversation"
+        description="Are you sure you want to permanently delete this conversation history? This action cannot be undone."
+        confirmText="Delete History"
+        variant="danger"
+      />
       {/* Mobile Overlay */}
       <AnimatePresence>
         {isOpen && (
@@ -174,7 +193,7 @@ export default function ConversationSidebar() {
                     )}
                     {!isCollapsed && (
                       <button 
-                        onClick={(e) => handleDelete(conv._id, e)}
+                        onClick={(e) => handleDeleteClick(conv._id, e)}
                         className="opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all p-1"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
