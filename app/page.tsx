@@ -17,12 +17,10 @@ export default function LandingPage() {
       {/* Header / Nav */}
       <header className="fixed top-0 z-50 w-full border-b border-border-custom bg-base/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center">
-              <Bot className="h-5 w-5 text-white" />
-            </div>
+          <Link href="/" className="flex items-center gap-2.5">
+            <img src="/logo.png" alt="Cortexa" className="h-8 w-8 object-contain" />
             <span className="font-syne text-xl font-bold tracking-tight text-white">Cortexa</span>
-          </div>
+          </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted">
             <Link href="#features" className="hover:text-white transition-colors">Features</Link>
             <Link href="https://github.com/samkiell" className="hover:text-white transition-colors flex items-center gap-1">
@@ -155,8 +153,8 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-border-custom py-12 bg-base">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <Bot className="h-6 w-6 text-accent" />
+          <div className="flex items-center gap-2.5">
+            <img src="/logo.png" alt="Cortexa" className="h-6 w-6 object-contain opacity-80" />
             <span className="font-syne text-lg font-bold text-white tracking-tight">Cortexa</span>
           </div>
           <p className="text-sm text-muted">© 2026 Cortexa Platform. All rights reserved.</p>
