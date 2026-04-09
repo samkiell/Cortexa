@@ -1,25 +1,27 @@
-'use client';
-
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowUp, 
   X, 
   Mic,
-  Paperclip
+  Paperclip,
+  Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface MessageInputProps {
-  onSend: (message: string, image?: string) => void;
+  onSend: (message: string, image?: string, searchEnabled?: boolean) => void;
   isLoading: boolean;
   isVisionCapable: boolean;
+  supportsTools?: boolean;
 }
 
-export default function MessageInput({ onSend, isLoading, isVisionCapable }: MessageInputProps) {
+export default function MessageInput({ onSend, isLoading, isVisionCapable, supportsTools = false }: MessageInputProps) {
   const [text, setText] = useState('');
   const [image, setImage] = useState<string | null>(null);
+  const [searchEnabled, setSearchEnabled] = useLocalStorage('cortexaSearchEnabled', false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -42,7 +44,7 @@ export default function MessageInput({ onSend, isLoading, isVisionCapable }: Mes
 
   const handleSend = () => {
     if ((!text.trim() && !image) || isLoading) return;
-    onSend(text, image || undefined);
+    onSend(text, image || undefined, searchEnabled);
     setText('');
     setImage(null);
     if (textareaRef.current) {
@@ -97,7 +99,7 @@ export default function MessageInput({ onSend, isLoading, isVisionCapable }: Mes
                     <img src={image} alt="" className="h-full w-full object-cover" />
                     <button 
                       onClick={() => setImage(null)}
-                      className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-black/60 text-white hover:bg-[#3b82f6]/80 transition-colors"
+                      className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-black/60 text-white hover:bg-red-500/80 transition-colors"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -152,6 +154,20 @@ export default function MessageInput({ onSend, isLoading, isVisionCapable }: Mes
                       />
                     )}
                   </div>
+                )}
+
+                {supportsTools && (
+                  <button
+                    onClick={() => setSearchEnabled(!searchEnabled)}
+                    className={`flex items-center justify-center p-1.5 rounded-md transition-all group relative ${
+                      searchEnabled 
+                        ? 'text-[#3b82f6] bg-[#3b82f6]/10' 
+                        : 'text-[#6b7280] hover:text-[#d1d5db]'
+                    }`}
+                    title="Web search"
+                  >
+                    <Globe className="h-4 w-4" />
+                  </button>
                 )}
               </div>
 

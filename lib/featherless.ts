@@ -4,6 +4,7 @@ export const CURATED_MODELS = [
     name: "Cydonia 24B Vision",
     size: "24B",
     vision: true,
+    supportsTools: false,
     tags: ["uncensored", "vision"],
     description: "Uncensored 24B with full vision support"
   },
@@ -12,6 +13,7 @@ export const CURATED_MODELS = [
     name: "Mistral Small 3.2",
     size: "24B",
     vision: true,
+    supportsTools: false,
     tags: ["vision"],
     description: "Strong general model with vision"
   },
@@ -20,6 +22,7 @@ export const CURATED_MODELS = [
     name: "Llama 3.3 70B",
     size: "70B",
     vision: false,
+    supportsTools: true,
     tags: ["abliterated"],
     description: "Most capable, fully abliterated"
   },
@@ -28,6 +31,7 @@ export const CURATED_MODELS = [
     name: "Qwen 2.5 72B",
     size: "72B",
     vision: false,
+    supportsTools: true,
     tags: ["abliterated"],
     description: "Top multilingual and reasoning model"
   },
@@ -36,6 +40,7 @@ export const CURATED_MODELS = [
     name: "Lexi 8B",
     size: "8B",
     vision: false,
+    supportsTools: true,
     tags: ["uncensored"],
     description: "Fast everyday uncensored model"
   }

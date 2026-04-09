@@ -19,6 +19,9 @@ interface Message {
   imageUrl?: string;
   timestamp?: Date;
   modelId?: string;
+  isSearching?: boolean;
+  searchQuery?: string;
+  sources?: any[];
 }
 
 interface ChatInterfaceProps {
@@ -33,7 +36,7 @@ export default function ChatInterface({
 }: ChatInterfaceProps) {
   const { toggle } = useSidebar();
   const { data: session } = useSession();
-  const { models, getModelById } = useModels();
+  const { models, getModelById, isLoading: isModelsLoading } = useModels();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [conversationId, setConversationId] = useState<string | undefined>(initialConvId);
   const [isLoading, setIsLoading] = useState(false);
@@ -85,17 +88,17 @@ export default function ChatInterface({
     }
   }, []);
 
-  const updateLastMessage = useCallback((content: string) => {
+  const updateLastMessage = useCallback((update: Partial<Message>) => {
     setMessages((prev) => {
       const last = prev[prev.length - 1];
       if (last && last.role === 'assistant') {
-        return [...prev.slice(0, -1), { ...last, content }];
+        return [...prev.slice(0, -1), { ...last, ...update }];
       }
       return prev;
     });
   }, []);
 
-  const handleSend = async (content: string, imageUrl?: string) => {
+  const handleSend = async (content: string, imageUrl?: string, searchEnabled?: boolean) => {
     if (!content.trim() && !imageUrl) return;
 
     const userMessage: Message = { 
@@ -135,7 +138,8 @@ export default function ChatInterface({
         body: JSON.stringify({ 
           modelId: selectedModel, 
           messages: nextMessages.map(m => ({ role: m.role, content: m.content })),
-          imageBase64: imageUrl 
+          imageBase64: imageUrl,
+          searchEnabled
         }),
       });
 
@@ -155,7 +159,7 @@ export default function ChatInterface({
       streamingBufferRef.current = '';
 
       const flush = () => {
-        updateLastMessage(streamingBufferRef.current);
+        updateLastMessage({ content: streamingBufferRef.current });
         animationFrameRef.current = null;
       };
 
@@ -164,11 +168,35 @@ export default function ChatInterface({
         const { done, value } = await reader.read();
         if (done) break;
 
-        const token = decoder.decode(value);
-        streamingBufferRef.current += token;
+        const chunk = decoder.decode(value);
         
-        if (!animationFrameRef.current) {
-          animationFrameRef.current = requestAnimationFrame(flush);
+        // Handle SSE search events
+        if (chunk.startsWith('data: ')) {
+          const lines = chunk.split('\n\n').filter(Boolean);
+          for (const line of lines) {
+            const jsonStr = line.replace('data: ', '').trim();
+            if (!jsonStr) continue;
+            try {
+              const data = JSON.parse(jsonStr);
+              if (data.type === 'search_start') {
+                updateLastMessage({ isSearching: true, searchQuery: data.query });
+              } else if (data.type === 'sources') {
+                updateLastMessage({ isSearching: false, sources: data.sources });
+              }
+            } catch (e) {
+              // Not JSON, probably plain text token
+              streamingBufferRef.current += jsonStr;
+              if (!animationFrameRef.current) {
+                animationFrameRef.current = requestAnimationFrame(flush);
+              }
+            }
+          }
+        } else {
+          // Plain text token
+          streamingBufferRef.current += chunk;
+          if (!animationFrameRef.current) {
+            animationFrameRef.current = requestAnimationFrame(flush);
+          }
         }
       }
 
@@ -177,12 +205,21 @@ export default function ChatInterface({
       }
       flush();
 
+      // Final save to DB
       if (currentConvId) {
+        const lastMsg = { 
+          role: 'assistant', 
+          content: streamingBufferRef.current, 
+          modelId: selectedModel, 
+          timestamp: new Date(),
+          sources: (messages[messages.length-1] as any)?.sources // Access via ref or state
+        };
+        
         await fetch(`/api/conversations/${currentConvId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            messages: [...nextMessages, { role: 'assistant', content: streamingBufferRef.current, modelId: selectedModel, timestamp: new Date() }] 
+            messages: [...nextMessages, lastMsg] 
           }),
         });
       }
@@ -195,9 +232,12 @@ export default function ChatInterface({
     }
   };
 
-  const isVisionCapable = useMemo(() => {
-    return getModelById(selectedModel)?.vision || false;
+  const modelInfo = useMemo(() => {
+    return getModelById(selectedModel);
   }, [selectedModel, getModelById]);
+
+  const isVisionCapable = modelInfo?.vision || false;
+  const supportsTools = (modelInfo as any)?.supportsTools || false;
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -249,6 +289,14 @@ export default function ChatInterface({
                 transition={{ duration: 0.4 }}
                 className="w-full text-center"
               >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  className="flex justify-center mb-6"
+                >
+                  <img src="/logo.png" alt="Cortexa Logo" className="h-16 w-16 opacity-90" />
+                </motion.div>
                 <h2 className="text-[28px] font-medium text-[#f9fafb] tracking-tight">
                   {getGreeting()}{userName}.
                 </h2>
@@ -327,6 +375,7 @@ export default function ChatInterface({
         onSend={handleSend} 
         isLoading={isLoading}
         isVisionCapable={isVisionCapable}
+        supportsTools={supportsTools}
       />
     </div>
   );

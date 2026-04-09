@@ -138,7 +138,7 @@ export default function ConversationSidebar() {
       >
         {/* App Logo/Name */}
         <div className="flex h-12 items-center px-4">
-          <span className="text-[13px] font-medium text-[#9ca3af]">Cortexa</span>
+          <img src="/landscape_logo.png" alt="Cortexa" className="h-[21px] w-auto opacity-90" />
         </div>
 
         {/* New Chat Button */}

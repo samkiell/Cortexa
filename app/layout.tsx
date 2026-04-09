@@ -23,6 +23,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Cortexa — AI Chat Platform",
   description: "Next-generation AI chat platform powered by Featherless AI.",
+  icons: {
+    icon: "/favicon.png",
+  },
+  openGraph: {
+    images: [{ url: "/og-image.png" }],
+  },
 };
 
 export default function RootLayout({
