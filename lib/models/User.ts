@@ -24,6 +24,13 @@ const UserSchema = new Schema(
       type: String,
       default: 'huihui-ai/Llama-3.3-70B-Instruct-abliterated',
     },
+    avatarUrl: {
+      type: String,
+    },
+    suspended: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

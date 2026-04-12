@@ -11,7 +11,8 @@ import {
   Trash2, 
   ArrowLeft,
   ChevronRight,
-  Camera
+  Camera,
+  Loader2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -30,6 +31,8 @@ export default function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isAvatarLoading, setIsAvatarLoading] = useState(false);
+  const [newAvatarFile, setNewAvatarFile] = useState<File | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -55,11 +58,47 @@ export default function SettingsPage() {
         toast.error("Avatar too large. Max 2MB.");
         return;
       }
+      
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Invalid file type. Use JPEG, PNG or WebP.");
+        return;
+      }
+
+      setNewAvatarFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatar(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const saveAvatar = async () => {
+    if (!newAvatarFile) return;
+    setIsAvatarLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', newAvatarFile);
+
+      const res = await fetch('/api/user/avatar', {
+        method: 'PUT',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success('Avatar updated');
+        setAvatar(data.avatarUrl);
+        setNewAvatarFile(null);
+        await update({ image: data.avatarUrl });
+      } else {
+        toast.error(data.error || 'Failed to update avatar');
+      }
+    } catch (err) {
+      toast.error('Error uploading avatar');
+    } finally {
+      setIsAvatarLoading(false);
     }
   };
 
@@ -161,9 +200,12 @@ export default function SettingsPage() {
                       <h2 className="text-[15px] font-medium text-[#f9fafb] mb-4">Profile</h2>
                       <div className="p-6 rounded-2xl bg-[#111111] border border-[#1a1a1a] space-y-6">
                         <div className="flex items-center gap-4">
+                        <div className="flex flex-col items-center gap-2">
                           <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                            <div className="h-16 w-16 rounded-full bg-[#1d4ed8] flex items-center justify-center shrink-0 overflow-hidden text-2xl font-medium text-white border-2 border-transparent group-hover:border-[#3b82f6]/50 transition-all">
-                              {avatar ? (
+                            <div className="h-16 w-16 rounded-full bg-accent flex items-center justify-center shrink-0 overflow-hidden text-2xl font-medium text-white border-2 border-transparent group-hover:border-accent/50 transition-all">
+                              {isAvatarLoading ? (
+                                <Loader2 className="h-6 w-6 animate-spin text-white" />
+                              ) : avatar ? (
                                 <img src={avatar} alt="" className="h-full w-full object-cover" />
                               ) : (
                                 <span>{name?.[0]?.toUpperCase() || 'U'}</span>
@@ -177,9 +219,19 @@ export default function SettingsPage() {
                               ref={fileInputRef} 
                               onChange={handleAvatarChange} 
                               className="hidden" 
-                              accept="image/*" 
+                              accept="image/jpeg,image/png,image/webp" 
                             />
                           </div>
+                          {newAvatarFile && !isAvatarLoading && (
+                            <button
+                              type="button"
+                              onClick={saveAvatar}
+                              className="px-3 py-1 bg-accent text-white rounded-full text-[11px] font-semibold hover:bg-accent-dim transition-all"
+                            >
+                              Save
+                            </button>
+                          )}
+                        </div>
                           <div className="flex-1 space-y-4">
                             <div className="space-y-1.5">
                               <label className="text-[12px] text-[#6b7280]">Name</label>

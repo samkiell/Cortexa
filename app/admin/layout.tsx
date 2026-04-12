@@ -7,7 +7,8 @@ import {
   Settings as SettingsIcon, 
   Users, 
   ChevronLeft,
-  LayoutDashboard
+  LayoutDashboard,
+  Sliders
 } from 'lucide-react';
 
 export default async function AdminLayout({
@@ -32,27 +33,34 @@ export default async function AdminLayout({
           </Link>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-1">
           <Link 
             href="/admin" 
-            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted hover:bg-base hover:text-white transition-all"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-base hover:text-white transition-all transition-colors"
           >
-            <LayoutDashboard className="h-5 w-5" />
+            <LayoutDashboard className="h-4 w-4" />
             Dashboard
           </Link>
           <Link 
             href="/admin/users" 
-            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted hover:bg-base hover:text-white transition-all"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-base hover:text-white transition-all transition-colors"
           >
-            <Users className="h-5 w-5" />
-            User Management
+            <Users className="h-4 w-4" />
+            Users
           </Link>
           <Link 
             href="/admin/settings" 
-            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted hover:bg-base hover:text-white transition-all"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-base hover:text-white transition-all transition-colors"
           >
-            <SettingsIcon className="h-5 w-5" />
-            Platform Settings
+            <SettingsIcon className="h-4 w-4" />
+            Settings
+          </Link>
+          <Link 
+            href="/admin/models" 
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-base hover:text-white transition-all transition-colors"
+          >
+            <Sliders className="h-4 w-4" />
+            Model Visibility
           </Link>
         </nav>
 
