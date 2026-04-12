@@ -1,35 +1,37 @@
-import type { Metadata } from "next";
-import { Syne, DM_Sans, Geist_Mono } from "next/font/google";
-import { Toaster } from "sonner";
-import { SidebarProvider } from "@/components/providers/SidebarProvider";
-import { ModelProvider } from "@/contexts/ModelContext";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Syne, DM_Sans, Geist_Mono } from 'next/font/google';
+import { Toaster } from 'sonner';
+import { SidebarProvider } from '@/components/providers/SidebarProvider';
+import { ModelProvider } from '@/contexts/ModelContext';
+import './globals.css';
 
 const syne = Syne({
-  variable: "--font-syne",
-  subsets: ["latin"],
+  variable: '--font-syne',
+  subsets: ['latin'],
 });
 
 const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
+  variable: '--font-dm-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Cortexa — AI Chat Platform",
-  description: "Next-generation AI chat platform powered by Featherless AI.",
-  icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
-  },
+  title: 'Cortexa — AI Without Limits',
+  description: 'Access powerful uncensored AI models including vision, reasoning, and code. Built for developers and researchers.',
+  metadataBase: new URL(process.env.NEXTAUTH_URL!),
   openGraph: {
-    images: [{ url: "/og-image.png" }],
+    title: 'Cortexa — AI Without Limits',
+    description: 'Access powerful uncensored AI models.',
+    type: 'website',
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
 };
 

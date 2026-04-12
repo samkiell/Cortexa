@@ -5,14 +5,29 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { UserPlus, Mail, Lock, User, Loader2 } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Loader2, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { useEffect } from 'react';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [registrationAllowed, setRegistrationAllowed] = useState<boolean | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await fetch('/api/admin/settings/status');
+        const data = await res.json();
+        setRegistrationAllowed(data.allowRegistration);
+      } catch (e) {
+        setRegistrationAllowed(true);
+      }
+    };
+    checkStatus();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,75 +74,99 @@ export default function RegisterPage() {
           <p className="mt-2 text-sm text-muted">Join Cortexa today. Start chatting with top AI models.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          <div className="space-y-4">
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <User className="h-5 w-5 text-muted" />
-              </div>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="block w-full rounded-lg border border-border-custom bg-base py-3 pl-10 pr-3 text-text-custom placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm transitions-all"
-                placeholder="Full Name"
-              />
+        {registrationAllowed === false ? (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }}
+            className="text-center py-8 space-y-4"
+          >
+            <div className="flex justify-center">
+              <ShieldAlert className="h-12 w-12 text-amber-500" />
             </div>
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Mail className="h-5 w-5 text-muted" />
-              </div>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full rounded-lg border border-border-custom bg-base py-3 pl-10 pr-3 text-text-custom placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm transitions-all"
-                placeholder="Email Address"
-              />
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold text-white">Registration is currently closed</h2>
+              <p className="text-sm text-muted">Please check back later or contact an administrator.</p>
             </div>
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Lock className="h-5 w-5 text-muted" />
-              </div>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full rounded-lg border border-border-custom bg-base py-3 pl-10 pr-3 text-text-custom placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm transitions-all"
-                placeholder="Password"
-              />
+            <div className="pt-4">
+              <Link href="/login" className="text-sm text-accent hover:underline flex items-center justify-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Sign in
+              </Link>
             </div>
-          </div>
+          </motion.div>
+        ) : (
+          <>
+            <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+              <div className="space-y-4">
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <User className="h-5 w-5 text-muted" />
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="block w-full rounded-lg border border-border-custom bg-base py-3 pl-10 pr-3 text-text-custom placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm transitions-all"
+                    placeholder="Full Name"
+                  />
+                </div>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <Mail className="h-5 w-5 text-muted" />
+                  </div>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="block w-full rounded-lg border border-border-custom bg-base py-3 pl-10 pr-3 text-text-custom placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm transitions-all"
+                    placeholder="Email Address"
+                  />
+                </div>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <Lock className="h-5 w-5 text-muted" />
+                  </div>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="block w-full rounded-lg border border-border-custom bg-base py-3 pl-10 pr-3 text-text-custom placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm transitions-all"
+                    placeholder="Password"
+                  />
+                </div>
+              </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative flex w-full justify-center rounded-lg bg-accent py-3 px-4 text-sm font-semibold text-white hover:bg-accent-dim focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-base disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                {isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <UserPlus className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                )}
-              </span>
-              {isLoading ? 'Creating account...' : 'Create account'}
-            </button>
-          </div>
-        </form>
+              <div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="group relative flex w-full justify-center rounded-lg bg-accent py-3 px-4 text-sm font-semibold text-white hover:bg-accent-dim focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-base disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                    {isLoading ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <UserPlus className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                    )}
+                  </span>
+                  {isLoading ? 'Creating account...' : 'Create account'}
+                </button>
+              </div>
+            </form>
 
-        <div className="text-center">
-          <p className="text-sm text-muted">
-            Already have an account?{' '}
-            <Link href="/login" className="font-medium text-accent hover:text-accent-dim transition-colors">
-              Sign in instead
-            </Link>
-          </p>
-        </div>
+            <div className="text-center">
+              <p className="text-sm text-muted">
+                Already have an account?{' '}
+                <Link href="/login" className="font-medium text-accent hover:text-accent-dim transition-colors">
+                  Sign in instead
+                </Link>
+              </p>
+            </div>
+          </>
+        )}
       </motion.div>
     </div>
   );

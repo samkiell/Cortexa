@@ -1,8 +1,14 @@
 import OpenAI from 'openai';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Settings from '@/lib/models/Settings';
+import User from '@/lib/models/User';
+import RateLimit from '@/lib/models/RateLimit';
 import { webSearch } from '@/lib/search';
 import { CURATED_MODELS } from '@/lib/featherless';
+import { startOfHour } from 'date-fns';
+import { decrypt } from '@/lib/crypto';
 
 const searchTool = {
   type: 'function',
@@ -24,11 +30,52 @@ const searchTool = {
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    const userId = (session.user as any).id;
+    const userRole = (session.user as any).role;
+    const isSuspended = (session.user as any).suspended;
+
+    if (isSuspended) {
+      return new Response('Your account has been suspended.', { status: 403 });
+    }
+
     const { modelId, messages, imageBase64, searchEnabled } = await req.json();
 
     await dbConnect();
+
+    // Per-user Rate Limiting (Skip for Admin)
+    if (userRole !== 'admin') {
+      const now = new Date();
+      const hourStart = startOfHour(now);
+      
+      let limitDoc = await RateLimit.findOne({ userId });
+      if (!limitDoc || limitDoc.windowStart < hourStart) {
+        // Reset or new window
+        limitDoc = await RateLimit.findOneAndUpdate(
+          { userId },
+          { count: 1, windowStart: hourStart },
+          { upsert: true, new: true }
+        );
+      } else if (limitDoc.count >= 30) {
+        return new Response('Rate limit exceeded. Max 30 messages per hour.', { status: 429 });
+      } else {
+        limitDoc.count += 1;
+        await limitDoc.save();
+      }
+    }
+
     const settings = await Settings.findOne();
-    const apiKey = settings?.featherlessApiKey || process.env.FEATHERLESS_API_KEY;
+    const apiKeyRaw = settings?.featherlessApiKey || process.env.FEATHERLESS_API_KEY;
+
+    // Use decryption if apiKey from DB is encrypted
+    let apiKey = apiKeyRaw;
+    if (apiKeyRaw && apiKeyRaw.includes(':')) {
+       apiKey = decrypt(apiKeyRaw);
+    }
 
     if (!apiKey) {
       return new Response('Missing API Key', { status: 500 });

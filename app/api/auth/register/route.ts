@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/db';
 import User from '@/lib/models/User';
+import Settings from '@/lib/models/Settings';
 
 export async function POST(req: Request) {
   try {
@@ -13,6 +14,12 @@ export async function POST(req: Request) {
 
     await dbConnect();
 
+    // Check if registration is allowed
+    const settings = await Settings.findOne();
+    if (settings && settings.allowRegistration === false) {
+      return new Response('Registration is currently closed', { status: 403 });
+    }
+
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -21,11 +28,15 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // If no users exist, the first one becomes admin
+    const userCount = await User.countDocuments();
+    const role = userCount === 0 ? 'admin' : 'user';
+
     const user = await User.create({
       email,
       password: hashedPassword,
       name,
-      role: 'user', // Default role
+      role,
     });
 
     return NextResponse.json(

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Conversation from '@/lib/models/Conversation';
+import Settings from '@/lib/models/Settings';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -28,6 +29,21 @@ export async function POST(req: Request) {
     const { title, modelId, messages } = await req.json();
 
     await dbConnect();
+    
+    // Check Settings for max conversations
+    const settings = await Settings.findOne();
+    const maxConvs = settings?.maxConversations || 50;
+
+    // Admin skip check
+    const isAdmin = (session.user as any).role === 'admin';
+    
+    if (!isAdmin) {
+      const currentCount = await Conversation.countDocuments({ userId: (session.user as any).id });
+      if (currentCount >= maxConvs) {
+        return NextResponse.json({ error: `You have reached the maximum of ${maxConvs} conversations.` }, { status: 403 });
+      }
+    }
+
     const conversation = await Conversation.create({
       userId: (session.user as any).id,
       title: title || 'New Conversation',

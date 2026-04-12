@@ -36,7 +36,8 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
-          image: user.image,
+          image: user.avatarUrl,
+          suspended: user.suspended,
         };
       },
     }),
@@ -47,6 +48,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = (user as any).role;
         token.image = (user as any).image;
+        token.suspended = (user as any).suspended;
       }
       // Handle the 'update' trigger from useSession().update()
       if (trigger === "update" && session?.image) {
@@ -59,6 +61,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
         (session.user as any).image = token.image;
+        (session.user as any).suspended = token.suspended;
       }
       return session;
     },
