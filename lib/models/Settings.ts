@@ -10,6 +10,22 @@ const SettingsSchema = new Schema(
       type: [String],
       default: [],
     },
+    siteName: {
+      type: String,
+      default: 'Cortexa',
+    },
+    allowRegistration: {
+      type: Boolean,
+      default: true,
+    },
+    maxConversations: {
+      type: Number,
+      default: 50,
+    },
+    maintenanceMode: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
