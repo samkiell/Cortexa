@@ -23,7 +23,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Cortexa — AI Without Limits',
   description: 'Access powerful uncensored AI models including vision, reasoning, and code. Built for developers and researchers.',
-  metadataBase: new URL(process.env.NEXTAUTH_URL!),
+  metadataBase: new URL(
+    process.env.NEXTAUTH_URL || 
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+  ),
   openGraph: {
     title: 'Cortexa — AI Without Limits',
     description: 'Access powerful uncensored AI models.',
