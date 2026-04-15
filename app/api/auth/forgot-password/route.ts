@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@cortexa.app',
+      from: process.env.RESEND_FROM_EMAIL || 'Cortexa <onboarding@resend.dev>',
       to: email,
       subject: 'Your Cortexa verification code',
       html: `

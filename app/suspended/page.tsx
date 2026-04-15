@@ -14,7 +14,7 @@ export default function SuspendedPage() {
         </div>
         <div className="pt-4 space-y-4">
           <a 
-            href="mailto:support@cortexa.app" 
+            href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@samkiel.dev'}`} 
             className="inline-block bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-6 py-3 text-[#f9fafb] font-medium hover:bg-[#252525] transition-all"
           >
             Contact Support
