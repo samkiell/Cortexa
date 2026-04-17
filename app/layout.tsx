@@ -29,7 +29,7 @@ if (!baseUrl && process.env.NODE_ENV === 'production') {
 export const metadata: Metadata = {
   title: 'Cortexa — AI Without Limits',
   description: 'Access powerful uncensored AI models including vision, reasoning, and code. Built for developers and researchers.',
-  metadataBase: baseUrl ? new URL(baseUrl) : null,
+  metadataBase: (baseUrl && baseUrl.startsWith('http')) ? new URL(baseUrl) : null,
   openGraph: {
     title: 'Cortexa — AI Without Limits',
     description: 'Access powerful uncensored AI models.',
