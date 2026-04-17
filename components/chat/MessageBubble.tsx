@@ -236,7 +236,12 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {message.sources.slice(0, 3).map((source, idx) => {
-                        const domain = new URL(source.url).hostname.replace('www.', '');
+                        if (!source.url) return null;
+                        let domain = 'unknown';
+                        try {
+                          domain = new URL(source.url).hostname.replace('www.', '');
+                        } catch (e) {}
+                        
                         return (
                           <a 
                             key={idx}

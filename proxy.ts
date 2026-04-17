@@ -10,11 +10,14 @@ export async function proxy(req: NextRequest) {
   // 1. Check for maintenance mode on chat routes
   if (pathname.startsWith('/chat')) {
     try {
-      const settingsRes = await fetch(`${req.nextUrl.origin}/api/admin/settings/status`);
-      const settings = await settingsRes.json();
-      
-      if (settings.maintenanceMode && token?.role !== 'admin') {
-        return NextResponse.redirect(new URL('/maintenance', req.url));
+      const origin = req.nextUrl.origin;
+      if (origin && origin !== 'null') {
+        const settingsRes = await fetch(`${origin}/api/admin/settings/status`);
+        const settings = await settingsRes.json();
+        
+        if (settings.maintenanceMode && token?.role !== 'admin') {
+          return NextResponse.redirect(new URL('/maintenance', req.url));
+        }
       }
     } catch (e) {
       // Silent fail
