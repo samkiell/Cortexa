@@ -1,4 +1,5 @@
 import { NextAuthOptions } from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/db';
@@ -6,6 +7,10 @@ import User from '@/lib/models/User';
 
 export const authOptions: NextAuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -43,12 +48,41 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google' && user.email) {
+        await dbConnect();
+        const existingUser = await User.findOne({ email: user.email });
+        if (!existingUser) {
+          // Identify admin by email
+          const role = user.email.toLowerCase() === 'samkiel.dev@gmail.com' ? 'admin' : 'user';
+          await User.create({
+            email: user.email,
+            name: user.name,
+            avatarUrl: user.image,
+            role,
+          });
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, trigger, session, account }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.image = user.image;
         token.suspended = user.suspended;
+      }
+
+      // For OAuth we need to fetch the DB user info on first sign in
+      if (account?.provider === 'google' && !token.role) {
+        await dbConnect();
+        const dbUser = await User.findOne({ email: token.email });
+        if (dbUser) {
+          token.id = dbUser._id.toString();
+          token.role = dbUser.role;
+          token.suspended = dbUser.suspended;
+          token.image = dbUser.avatarUrl;
+        }
       }
       // Handle the 'update' trigger from useSession().update()
       if (trigger === "update" && session?.image) {
