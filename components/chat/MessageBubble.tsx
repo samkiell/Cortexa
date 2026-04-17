@@ -238,8 +238,11 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
                         if (!source.url) return null;
                         let domain = 'unknown';
                         try {
-                          domain = new URL(source.url).hostname.replace('www.', '');
-                        } catch (_e) {}
+                          const safeUrl = source.url || 'https://unknown';
+                          domain = new URL(safeUrl).hostname.replace('www.', '');
+                        } catch (_e) {
+                          domain = 'unknown';
+                        }
                         
                         return (
                           <a 

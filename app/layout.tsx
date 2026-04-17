@@ -20,6 +20,10 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+const baseUrl = (process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL !== '')
+  ? process.env.NEXT_PUBLIC_APP_URL
+  : "https://cortexa.ai";
+
 export const metadata: Metadata = {
   title: 'Cortexa — AI Without Limits',
   description: 'Access powerful uncensored AI models including vision, reasoning, and code. Built for developers and researchers.',
@@ -30,8 +34,8 @@ export const metadata: Metadata = {
     type: 'website',
   },
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: '/favicon.png',
+    apple: '/logo.png',
   },
 };
 
