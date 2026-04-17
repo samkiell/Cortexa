@@ -1,5 +1,11 @@
 import { tavily } from '@tavily/core'
 
+interface TavilySearchResult {
+  title: string;
+  url: string;
+  content: string;
+}
+
 let client: any = null;
 
 function getTavilyClient() {
@@ -20,7 +26,7 @@ export async function webSearch(query: string) {
   })
   return {
     answer: result.answer,
-    results: result.results.map(r => ({
+    results: result.results.map((r: TavilySearchResult) => ({
       title: r.title,
       url: r.url,
       content: r.content,
