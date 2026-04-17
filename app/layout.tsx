@@ -20,14 +20,16 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-const baseUrl = (process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL !== '')
-  ? process.env.NEXT_PUBLIC_APP_URL
-  : "https://cortexa.samkiel.dev/";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+if (!baseUrl && process.env.NODE_ENV === 'production') {
+  throw new Error('NEXT_PUBLIC_APP_URL is not set in production');
+}
 
 export const metadata: Metadata = {
   title: 'Cortexa — AI Without Limits',
   description: 'Access powerful uncensored AI models including vision, reasoning, and code. Built for developers and researchers.',
-  metadataBase: new URL(baseUrl),
+  metadataBase: baseUrl ? new URL(baseUrl) : null,
   openGraph: {
     title: 'Cortexa — AI Without Limits',
     description: 'Access powerful uncensored AI models.',

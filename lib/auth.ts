@@ -5,11 +5,23 @@ import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/db';
 import User from '@/lib/models/User';
 
+if (!process.env.NEXTAUTH_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('NEXTAUTH_SECRET is not set');
+}
+
+if (!process.env.GOOGLE_CLIENT_ID && process.env.NODE_ENV === 'production') {
+    throw new Error('GOOGLE_CLIENT_ID is not set');
+}
+
+if (!process.env.GOOGLE_CLIENT_SECRET && process.env.NODE_ENV === 'production') {
+    throw new Error('GOOGLE_CLIENT_SECRET is not set');
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     }),
     CredentialsProvider({
       name: 'Credentials',
