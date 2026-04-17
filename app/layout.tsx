@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import { Syne, DM_Sans, Geist_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { SidebarProvider } from '@/components/providers/SidebarProvider';
