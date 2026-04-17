@@ -19,7 +19,7 @@ export async function proxy(req: NextRequest) {
           return NextResponse.redirect(new URL('/maintenance', req.url));
         }
       }
-    } catch (e) {
+    } catch (_e) {
       // Silent fail
     }
   }

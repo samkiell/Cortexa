@@ -24,8 +24,8 @@ export function ModelProvider({ children }: { children: ReactNode }) {
         if (!response.ok) throw new Error('Failed to fetch models');
         const data = await response.json();
         setModels(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
         setIsLoading(false);
       }

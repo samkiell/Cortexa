@@ -47,11 +47,12 @@ export async function POST(req: Request) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    if (error.code === 11000) {
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
       return new Response('User already exists', { status: 400 });
     }
     console.error('Verify registration error:', error);
-    return new Response(error.message || 'Error creating account', { status: 500 });
+    const message = error instanceof Error ? error.message : 'Error creating account';
+    return new Response(message, { status: 500 });
   }
 }

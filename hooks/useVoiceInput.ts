@@ -11,30 +11,58 @@ export interface UseVoiceInputReturn {
   isSupported: boolean;
 }
 
+interface SpeechRecognitionEvent extends Event {
+  readonly resultIndex: number;
+  readonly results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  readonly error: string;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onend: () => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  start: () => void;
+  stop: () => void;
+}
+
 export const useVoiceInput = (): UseVoiceInputReturn => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [isSupported, setIsSupported] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const [isSupported] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const win = window as unknown as { 
+        SpeechRecognition: new () => SpeechRecognition; 
+        webkitSpeechRecognition: new () => SpeechRecognition; 
+      };
+      return !!(win.SpeechRecognition || win.webkitSpeechRecognition);
+    }
+    return false;
+  });
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (typeof window !== 'undefined' && isSupported) {
+      const win = window as unknown as { 
+        SpeechRecognition: new () => SpeechRecognition; 
+        webkitSpeechRecognition: new () => SpeechRecognition; 
+      };
+      const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
       if (SpeechRecognition) {
-        setIsSupported(true);
         const recognition = new SpeechRecognition();
         recognition.continuous = false;
         recognition.interimResults = true;
         recognition.lang = 'en-US';
 
-        recognition.onresult = (event: any) => {
+        recognition.onresult = (event) => {
           let currentTranscript = '';
           for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-              currentTranscript += event.results[i][0].transcript;
-            } else {
-              currentTranscript += event.results[i][0].transcript;
-            }
+            currentTranscript += event.results[i][0].transcript;
           }
           setTranscript(currentTranscript);
         };
@@ -43,7 +71,7 @@ export const useVoiceInput = (): UseVoiceInputReturn => {
           setIsListening(false);
         };
 
-        recognition.onerror = (event: any) => {
+        recognition.onerror = (event) => {
           console.error('Speech recognition error', event.error);
           if (event.error !== 'no-speech') {
             toast.error("Voice input failed. Try again.");
@@ -54,12 +82,19 @@ export const useVoiceInput = (): UseVoiceInputReturn => {
         recognitionRef.current = recognition;
       }
     }
-  }, []);
+  }, [isSupported]);
 
   const startListening = useCallback(async () => {
     if (!recognitionRef.current) return;
 
     try {
+      // Stop any existing recognition
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        // Silent fail
+      }
+
       // Request mic permission and ensure high quality
       await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -75,12 +110,14 @@ export const useVoiceInput = (): UseVoiceInputReturn => {
       // Stop any existing recognition
       try {
         recognitionRef.current.stop();
-      } catch (e) {}
+      } catch {
+        // Silent fail
+      }
 
       recognitionRef.current.start();
       setIsListening(true);
-    } catch (err) {
-      console.error('Mic permission denied', err);
+    } catch (_err) {
+      console.error('Mic permission denied', _err);
       toast.error("Microphone access denied.");
     }
   }, []);

@@ -11,23 +11,15 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { useSession } from 'next-auth/react';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
+import NextImage from 'next/image';
 import ModelSelector from './ModelSelector';
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-  imageUrl?: string;
-  timestamp?: Date;
-  modelId?: string;
-  isSearching?: boolean;
-  searchQuery?: string;
-  sources?: any[];
-}
+import { Message, Source } from '@/types/chat';
 
 interface ChatInterfaceProps {
   initialMessages?: Message[];
   conversationId?: string;
-  initialModels?: any[];
+  initialModels?: unknown[];
 }
 
 export default function ChatInterface({ 
@@ -290,7 +282,7 @@ export default function ChatInterface({
   }, [selectedModel, getModelById]);
 
   const isVisionCapable = modelInfo?.vision || false;
-  const supportsTools = (modelInfo as any)?.supportsTools || false;
+  const supportsTools = (modelInfo as { supportsTools?: boolean })?.supportsTools || false;
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -357,7 +349,13 @@ export default function ChatInterface({
                   transition={{ duration: 0.5, delay: 0.1 }}
                   className="flex justify-center mb-6"
                 >
-                  <img src="/logo.png" alt="Cortexa Logo" className="h-20 w-20 opacity-90" />
+                  <NextImage 
+                    src="/logo.png" 
+                    alt="Cortexa Logo" 
+                    width={80}
+                    height={80}
+                    className="h-20 w-20 opacity-90" 
+                  />
                 </motion.div>
                 <h2 className="text-[28px] font-medium text-[#f9fafb] tracking-tight">
                   {getGreeting()}{userName}.

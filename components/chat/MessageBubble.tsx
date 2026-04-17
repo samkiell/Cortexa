@@ -1,4 +1,5 @@
 import React, { useState, memo, useRef, useEffect } from 'react';
+import NextImage from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Copy, 
@@ -13,16 +14,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-  imageUrl?: string;
-  timestamp?: Date;
-  modelId?: string;
-  isSearching?: boolean;
-  searchQuery?: string;
-  sources?: { title: string; url: string; content: string }[];
-}
+import { Message, Source } from '@/types/chat';
 
 interface MessageBubbleProps {
   message: Message;
@@ -130,7 +122,14 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
                 <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-[18px] px-4 py-2.5 text-[14px] text-[#f9fafb]">
                   {message.imageUrl && (
                     <div className="mb-2 overflow-hidden rounded-lg border border-[#2e2e2e]">
-                      <img src={message.imageUrl} alt="Uploaded" className="max-h-64 object-contain" />
+                      <NextImage 
+                        src={message.imageUrl} 
+                        alt="Uploaded" 
+                        width={500}
+                        height={300}
+                        unoptimized
+                        className="max-h-64 h-auto w-auto object-contain" 
+                      />
                     </div>
                   )}
                   <p className="whitespace-pre-wrap leading-normal font-normal">{message.content}</p>
@@ -183,10 +182,10 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
                     components={{
                       pre: ({ children }) => {
                         const [copied, setCopied] = useState(false);
-                        const codeElement = React.Children.toArray(children)[0] as React.ReactElement;
-                        const lang = (codeElement?.props as any)?.className?.replace('language-', '') || 'code';
+                        const codeElement = React.Children.toArray(children)[0] as React.ReactElement<{ className?: string, children?: string }>;
+                        const lang = codeElement?.props?.className?.replace('language-', '') || 'code';
                         const handleCopy = () => {
-                          const code = (codeElement?.props as any)?.children;
+                          const code = codeElement?.props?.children;
                           if (code) {
                             navigator.clipboard.writeText(String(code));
                             setCopied(true);
@@ -240,7 +239,7 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
                         let domain = 'unknown';
                         try {
                           domain = new URL(source.url).hostname.replace('www.', '');
-                        } catch (e) {}
+                        } catch (_e) {}
                         
                         return (
                           <a 
@@ -250,9 +249,12 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 bg-[#161616] border border-[#2a2a2a] rounded-lg px-3 py-2 hover:bg-[#1a1a1a] hover:border-[#3b82f6]/30 transition-all group"
                           >
-                            <img 
+                            <NextImage 
                               src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`} 
                               alt="" 
+                              width={14}
+                              height={14}
+                              unoptimized
                               className="h-3.5 w-3.5 opacity-80 group-hover:opacity-100"
                             />
                             <div className="flex flex-col min-w-0">

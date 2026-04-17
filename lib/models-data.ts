@@ -1,4 +1,3 @@
-import OpenAI from 'openai';
 import dbConnect from '@/lib/db';
 import Settings from '@/lib/models/Settings';
 import { CURATED_MODELS } from './featherless';
@@ -20,7 +19,7 @@ export async function getSettings() {
   }
 }
 
-export async function getModels(adminMode = false) {
+export async function getModels() {
   // Return the curated list directly as per instructions
   return CURATED_MODELS.map(m => ({
     ...m,

@@ -46,9 +46,9 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
-        token.image = (user as any).image;
-        token.suspended = (user as any).suspended;
+        token.role = user.role;
+        token.image = user.image;
+        token.suspended = user.suspended;
       }
       // Handle the 'update' trigger from useSession().update()
       if (trigger === "update" && session?.image) {
@@ -58,10 +58,10 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
-        (session.user as any).image = token.image;
-        (session.user as any).suspended = token.suspended;
+        session.user.id = token.id;
+        session.user.role = token.role;
+        session.user.image = token.image;
+        session.user.suspended = token.suspended;
       }
       return session;
     },

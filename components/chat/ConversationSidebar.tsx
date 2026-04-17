@@ -21,12 +21,21 @@ import { signOut, useSession } from 'next-auth/react';
 import { isToday, isWithinInterval, subDays, startOfDay } from 'date-fns';
 import { useSidebar } from '@/components/providers/SidebarProvider';
 import Modal from '@/components/ui/Modal';
+import NextImage from 'next/image';
+
+interface Conversation {
+  _id: string;
+  title: string;
+  updatedAt?: string;
+  createdAt?: string;
+  [key: string]: any;
+}
 
 export default function ConversationSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const { isOpen, setIsOpen } = useSidebar();
-  const [conversations, setConversations] = useState<any[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   
@@ -60,7 +69,7 @@ export default function ConversationSidebar() {
   }, [session, pathname]);
 
   const groupedConversations = useMemo(() => {
-    const groups: { [key: string]: any[] } = {
+    const groups: { [key: string]: Conversation[] } = {
       Today: [],
       'Previous 7 Days': [],
       Older: []
@@ -101,7 +110,7 @@ export default function ConversationSidebar() {
       if (res.ok) {
         setConversations((prev) => prev.filter((c) => c._id !== targetDeleteId));
       }
-    } catch (err) {
+    } catch (_err) {
       console.error('Failed to delete conversation');
     } finally {
       setDeleteModalOpen(false);
@@ -144,7 +153,13 @@ export default function ConversationSidebar() {
       >
         {/* App Logo/Name & Toggle */}
         <div className="flex h-12 items-center justify-between px-4 shrink-0">
-          <img src="/landscape_logo.png" alt="Cortexa" className="h-[26px] w-auto opacity-90" />
+          <NextImage 
+            src="/landscape_logo.png" 
+            alt="Cortexa" 
+            width={120}
+            height={26}
+            className="h-[26px] w-auto opacity-90" 
+          />
           <button 
             onClick={() => setIsOpen(false)}
             className="p-1.5 rounded-md hover:bg-[#1a1a1a] text-[#6b7280] transition-colors"
@@ -215,7 +230,13 @@ export default function ConversationSidebar() {
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="h-7 w-7 rounded-full bg-[#1d4ed8] flex items-center justify-center shrink-0 overflow-hidden">
                 {session?.user?.image ? (
-                  <img src={session.user.image} alt="" className="h-full w-full object-cover" />
+                  <NextImage 
+                    src={session.user.image} 
+                    alt="User" 
+                    width={28}
+                    height={28}
+                    className="h-full w-full object-cover" 
+                  />
                 ) : (
                   <span className="text-[11px] font-medium text-[#93c5fd]">
                     {session?.user?.name ? (
