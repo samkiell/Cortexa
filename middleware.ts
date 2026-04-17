@@ -2,11 +2,13 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const isAuth = !!token;
-  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cortexa.ai';
+  const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL !== '') 
+    ? process.env.NEXT_PUBLIC_APP_URL 
+    : 'https://cortexa.samkiel.dev/';
 
   // 1. Check for maintenance mode on chat routes
   if (pathname.startsWith('/chat')) {
