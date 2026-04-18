@@ -130,6 +130,15 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <div className="flex justify-end">
+              <Link 
+                href="/forgot-password" 
+                className="text-[12px] font-medium text-white/40 hover:text-white transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
             <button
               type="submit"
               disabled={isLoading}
@@ -141,12 +150,6 @@ export default function LoginPage() {
                 'Sign in'
               )}
             </button>
-            
-            <div className="flex justify-center">
-              <Link href="/forgot-password" hidden className="text-[12px] font-medium text-white/40 hover:text-white transition-colors">
-                Forgot password?
-              </Link>
-            </div>
           </form>
 
           <div className="text-center pt-2">
