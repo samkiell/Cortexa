@@ -7,9 +7,12 @@ export async function proxy(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const isAuth = !!token;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || '';
-  const BASE_URL = (appUrl && appUrl.startsWith('http')) 
+  const origin = req.nextUrl.origin;
+  
+  // Use environment variable if it's a valid remote URL, otherwise fallback to request origin or hardcoded prod URL
+  const BASE_URL = (appUrl && appUrl.startsWith('http') && !appUrl.includes('localhost')) 
     ? appUrl 
-    : 'https://cortexa.samkiel.dev/';
+    : (origin && origin !== 'null' ? origin : 'https://cortexa.samkiel.dev');
 
   // 1. Check for maintenance mode on chat routes
   if (pathname.startsWith('/chat')) {
