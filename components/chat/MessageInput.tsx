@@ -16,11 +16,19 @@ interface MessageInputProps {
   isLoading: boolean;
   isVisionCapable: boolean;
   supportsTools?: boolean;
+  image: string | null;
+  setImage: (image: string | null) => void;
 }
 
-export default function MessageInput({ onSend, isLoading, isVisionCapable, supportsTools = false }: MessageInputProps) {
+export default function MessageInput({ 
+  onSend, 
+  isLoading, 
+  isVisionCapable, 
+  supportsTools = false,
+  image,
+  setImage
+}: MessageInputProps) {
   const [text, setText] = useState('');
-  const [image, setImage] = useState<string | null>(null);
   const [searchEnabled, setSearchEnabled] = useLocalStorage('cortexaSearchEnabled', false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);

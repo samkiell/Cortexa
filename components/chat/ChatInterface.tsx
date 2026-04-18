@@ -33,6 +33,10 @@ export default function ChatInterface({
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [conversationId, setConversationId] = useState<string | undefined>(initialConvId);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('');
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [image, setImage] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Reset when navigating to 'New Chat'
   useEffect(() => {
@@ -41,14 +45,53 @@ export default function ChatInterface({
       setConversationId(undefined);
     }
   }, [pathname]);
-  const [selectedModel, setSelectedModel] = useState('');
-  const [showScrollButton, setShowScrollButton] = useState(false);
   
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingBufferRef = useRef('');
   const animationFrameRef = useRef<number | null>(null);
   const router = useRouter();
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (isVisionCapable) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const processFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please drop an image file.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image too large. Max 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result as string);
+      toast.success("Image attached");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    if (!isVisionCapable) {
+      toast.error("Selected model doesn't support images.");
+      return;
+    }
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  };
 
   useEffect(() => {
     if (models.length > 0 && !selectedModel) {
@@ -295,7 +338,30 @@ export default function ChatInterface({
   const userName = session?.user?.name ? `, ${session.user.name.split(' ')[0]}` : '';
 
   return (
-    <div className="flex flex-col h-full bg-[#0d0d0d] overflow-hidden relative font-inter">
+    <div 
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className="flex flex-col h-full bg-[#0d0d0d] overflow-hidden relative font-inter"
+    >
+      <AnimatePresence>
+        {isDragging && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[100] bg-[#3b82f6]/10 backdrop-blur-sm flex items-center justify-center border-2 border-dashed border-[#3b82f6]/40 m-4 rounded-[24px]"
+          >
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-16 w-16 rounded-full bg-[#3b82f6]/20 flex items-center justify-center">
+                <NextImage src="/logo.png" alt="" width={32} height={32} className="opacity-80" />
+              </div>
+              <p className="text-lg font-medium text-[#3b82f6]">Drop image to attach</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Minimal Top Bar */}
       <header className="flex items-center justify-between h-14 px-4 shrink-0 z-40">
         <div className="flex items-center gap-2">
@@ -438,6 +504,8 @@ export default function ChatInterface({
         isLoading={isLoading}
         isVisionCapable={isVisionCapable}
         supportsTools={supportsTools}
+        image={image}
+        setImage={setImage}
       />
     </div>
   );

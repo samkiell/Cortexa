@@ -2,17 +2,21 @@ import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-import { DM_Sans, Geist_Mono } from 'next/font/google';
+import { Syne, DM_Sans, Geist_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { SidebarProvider } from '@/components/providers/SidebarProvider';
 import { ModelProvider } from '@/contexts/ModelContext';
 import SessionProviderWrapper from '@/components/providers/SessionProviderWrapper';
 import './globals.css';
 
+const syne = Syne({
+  variable: '--font-syne',
+  subsets: ['latin'],
+});
+
 const dmSans = DM_Sans({
   variable: '--font-dm-sans',
   subsets: ['latin'],
-  weight: ['300', '500'],
 });
 
 const geistMono = Geist_Mono({
@@ -20,11 +24,7 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-
-if (!baseUrl && process.env.NODE_ENV === 'production') {
-  throw new Error('NEXT_PUBLIC_APP_URL is not set in production');
-}
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cortexa.samkiel.dev';
 
 export const metadata: Metadata = {
   title: 'Cortexa — AI Without Limits',
@@ -49,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${geistMono.variable} antialiased`}
+      className={`${syne.variable} ${dmSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="bg-base text-text-custom font-dm-sans">
         <SessionProviderWrapper>

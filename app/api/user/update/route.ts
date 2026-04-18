@@ -32,6 +32,11 @@ export async function PUT(req: Request) {
       if (!isMatch) {
         return NextResponse.json({ error: 'Incorrect current password' }, { status: 400 });
       }
+
+      if (newPassword.length < 6) {
+        return NextResponse.json({ error: 'New password must be at least 6 characters' }, { status: 400 });
+      }
+
       user.password = await bcrypt.hash(newPassword, 12);
     }
 

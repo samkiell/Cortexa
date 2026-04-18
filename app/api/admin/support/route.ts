@@ -29,40 +29,50 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
   
-      const { id, status } = await req.json();
+      const { id, status, adminResponse } = await req.json();
   
       await dbConnect();
-      const ticket = await SupportTicket.findByIdAndUpdate(id, { status }, { new: true });
+      const updateData: any = { status };
+      if (adminResponse !== undefined) updateData.adminResponse = adminResponse;
+
+      const ticket = await SupportTicket.findByIdAndUpdate(id, updateData, { new: true });
 
       if (ticket) {
         // Send notification email to the user
         try {
           await sendEmail({
             to: ticket.userEmail,
-            subject: `Support Update: ${ticket.subject}`,
+            subject: `Update on your request: ${ticket.subject}`,
             html: `
-              <div style="background-color: #090909; color: #ffffff; padding: 40px; font-family: sans-serif; border-radius: 12px; max-width: 500px; margin: 0 auto; border: 1px solid rgba(255, 255, 255, 0.08);">
-                <div style="margin-bottom: 24px; text-align: center;">
-                  <h1 style="color: #ffffff; font-size: 24px; font-weight: 500; margin: 0; tracking: -0.02em;">Cortexa Support</h1>
+              <div style="background-color: #090909; color: #ffffff; padding: 40px; font-family: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, helvetica, arial, sans-serif; border-radius: 12px; max-width: 500px; margin: 0 auto; border: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="margin-bottom: 32px; text-align: left;">
+                  <h1 style="color: #ffffff; font-size: 20px; font-weight: 500; margin: 0; letter-spacing: -0.01em;">Cortexa Support</h1>
                 </div>
                 
-                <p style="font-size: 15px; line-height: 1.6; color: rgba(255, 255, 255, 0.4); margin-bottom: 24px;">
-                  The status of your support request has been updated.
+                <p style="font-size: 15px; line-height: 1.6; color: rgba(255, 255, 255, 0.6); margin-bottom: 24px;">
+                  Hello, we've updated the status of your support request.
                 </p>
 
-                <div style="background-color: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 24px; border-radius: 8px; margin-bottom: 24px;">
+                ${adminResponse ? `
+                  <div style="margin-bottom: 32px; padding: 20px; background-color: rgba(37, 99, 235, 0.05); border-left: 2px solid #2563eb; border-radius: 4px;">
+                    <div style="font-size: 12px; font-weight: 600; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Message from Specialist</div>
+                    <div style="font-size: 15px; color: #ffffff; line-height: 1.6; font-style: italic;">"${adminResponse}"</div>
+                  </div>
+                ` : ''}
+
+                <div style="background-color: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); padding: 20px; border-radius: 8px;">
                   <div style="margin-bottom: 12px;">
-                    <span style="font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.2); text-transform: uppercase;">Subject</span>
-                    <div style="font-size: 14px; color: #ffffff; margin-top: 4px;">${ticket.subject}</div>
+                    <div style="font-size: 11px; font-weight: 500; color: rgba(255, 255, 255, 0.3); text-transform: uppercase; letter-spacing: 0.05em;">Request</div>
+                    <div style="font-size: 14px; color: rgba(255, 255, 255, 0.8); margin-top: 4px;">${ticket.subject}</div>
                   </div>
                   <div>
-                    <span style="font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.2); text-transform: uppercase;">New Status</span>
-                    <div style="font-size: 14px; color: #2563eb; margin-top: 4px; font-weight: 500; text-transform: capitalize;">${status}</div>
+                    <div style="font-size: 11px; font-weight: 500; color: rgba(255, 255, 255, 0.3); text-transform: uppercase; letter-spacing: 0.05em;">New Status</div>
+                    <div style="font-size: 13px; color: #2563eb; margin-top: 4px; font-weight: 600; text-transform: capitalize;">• ${status}</div>
                   </div>
                 </div>
 
-                <p style="font-size: 13px; color: rgba(255, 255, 255, 0.2); text-align: center; margin-top: 32px;">
-                  This is an automated notification. Please do not reply directly to this email.
+                <p style="font-size: 12px; color: rgba(255, 255, 255, 0.2); text-align: center; margin-top: 40px; border-top: 1px solid rgba(255, 255, 255, 0.06); pt-24px;">
+                  This is an automated notification from Cortexa.
                 </p>
               </div>
             `

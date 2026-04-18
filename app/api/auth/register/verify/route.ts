@@ -12,6 +12,10 @@ export async function POST(req: Request) {
       return new Response('All fields are required', { status: 400 });
     }
 
+    if (password.length < 6) {
+      return new Response('Password must be at least 6 characters', { status: 400 });
+    }
+
     await dbConnect();
 
     // Verify OTP

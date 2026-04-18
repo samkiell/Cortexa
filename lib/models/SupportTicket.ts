@@ -23,6 +23,9 @@ const SupportTicketSchema = new Schema(
       enum: ['open', 'in-progress', 'resolved', 'closed'],
       default: 'open',
     },
+    adminResponse: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

@@ -6,15 +6,13 @@ import {
   LifeBuoy, 
   Search, 
   Filter, 
-  MoreVertical, 
   Trash2, 
   CheckCircle2, 
   Clock, 
   AlertCircle,
   Loader2,
   Mail,
-  Calendar,
-  ExternalLink
+  Calendar
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
@@ -24,6 +22,7 @@ export default function AdminSupportPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [responses, setResponses] = useState<Record<string, string>>({});
 
   const fetchTickets = async () => {
     try {
@@ -43,22 +42,6 @@ export default function AdminSupportPage() {
     fetchTickets();
   }, []);
 
-  const updateStatus = async (id: string, newStatus: string) => {
-    try {
-      const res = await fetch('/api/admin/support', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: newStatus }),
-      });
-      if (res.ok) {
-        setTickets(tickets.map(t => t._id === id ? { ...t, status: newStatus } : t));
-        toast.success(`Status updated to ${newStatus}`);
-      }
-    } catch (err) {
-      toast.error('Failed to update status');
-    }
-  };
-
   const deleteTicket = async (id: string) => {
     if (!confirm('Are you sure you want to delete this report?')) return;
     try {
@@ -72,9 +55,32 @@ export default function AdminSupportPage() {
     }
   };
 
+  const updateStatus = async (id: string, newStatus: string, adminResponse?: string) => {
+    try {
+      const res = await fetch('/api/admin/support', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus, adminResponse }),
+      });
+      if (res.ok) {
+        setTickets(tickets.map(t => t._id === id ? { ...t, status: newStatus, adminResponse } : t));
+        setResponses(prev => ({ ...prev, [id]: '' }));
+        toast.success(`Update sent to user`);
+      }
+    } catch (err) {
+      toast.error('Failed to update status');
+    }
+  };
+
+  const handleResponseChange = (id: string, value: string) => {
+    setResponses(prev => ({ ...prev, [id]: value }));
+  };
+
   const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = ticket.userEmail.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         ticket.subject.toLowerCase().includes(searchQuery.toLowerCase());
+    const email = ticket.userEmail || '';
+    const subject = ticket.subject || '';
+    const matchesSearch = email.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         subject.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -169,7 +175,7 @@ export default function AdminSupportPage() {
                     <div className="flex items-center gap-2">
                       <select 
                         value={ticket.status}
-                        onChange={(e) => updateStatus(ticket._id, e.target.value)}
+                        onChange={(e) => updateStatus(ticket._id, e.target.value, ticket.adminResponse)}
                         className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg px-2 py-1 text-[11px] text-[#9ca3af] outline-none hover:border-accent/40 transition-all"
                       >
                         <option value="open">Mark Open</option>
@@ -188,6 +194,34 @@ export default function AdminSupportPage() {
 
                   <div className="bg-[#0d0d0d] rounded-xl p-4 border border-[#1f1f1f]">
                     <p className="text-[14px] text-[#d1d5db] leading-relaxed whitespace-pre-wrap">{ticket.message}</p>
+                  </div>
+
+                  {ticket.adminResponse && (
+                    <div className="flex flex-col gap-1.5 pt-2">
+                        <span className="text-[10px] font-bold text-accent uppercase tracking-wider ml-1">Latest Support Response</span>
+                        <div className="bg-accent/5 rounded-xl p-4 border border-accent/10">
+                            <p className="text-[14px] text-accent leading-relaxed italic">"{ticket.adminResponse}"</p>
+                        </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-3 pt-2">
+                    <textarea 
+                      placeholder="Type your response to the user..."
+                      value={responses[ticket._id] || ''}
+                      onChange={(e) => handleResponseChange(ticket._id, e.target.value)}
+                      className="w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl px-4 py-3 text-[13px] text-[#f9fafb] placeholder-[#333333] outline-none focus:border-accent/40 transition-all min-h-[80px] resize-none"
+                    />
+                    <div className="flex items-center justify-end">
+                        <button 
+                            onClick={() => updateStatus(ticket._id, 'resolved', responses[ticket._id])}
+                            disabled={!responses[ticket._id]}
+                            className="bg-accent h-9 px-4 rounded-lg text-white text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-accent/90 transition-all disabled:opacity-50 disabled:grayscale"
+                        >
+                            <Mail className="h-4 w-4" />
+                            Send Reply & Resolve
+                        </button>
+                    </div>
                   </div>
                 </div>
               </motion.div>
