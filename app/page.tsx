@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { motion } from 'framer-motion';
 import { 
   Bot, 
@@ -13,69 +15,43 @@ import {
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-base overflow-x-hidden">
-      {/* Header / Nav */}
-      <header className="fixed top-0 z-50 w-full border-b border-border-custom bg-base/80 backdrop-blur-md">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Cortexa" className="h-8 w-8 object-contain" />
-            <span className="font-syne text-xl font-bold tracking-tight text-white">Cortexa</span>
-          </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted">
-            <Link href="#features" className="hover:text-white transition-colors">Features</Link>
-            <Link href="https://github.com/samkiell" className="hover:text-white transition-colors flex items-center gap-1">
-              <Bot className="h-4 w-4" />
-              Source
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium text-muted hover:text-white transition-colors">
-              Log in
-            </Link>
-            <Link 
-              href="/register" 
-              className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-white hover:bg-accent-dim transition-all shadow-lg shadow-accent/20"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="flex min-h-screen flex-col bg-[#090909] text-white selection:bg-blue-500/30">
+      <Navbar />
 
-      <main className="flex-1 pt-16">
+      <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative py-20 lg:py-32">
-          {/* Background Gradient Blurs */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[500px] bg-accent/10 blur-[120px] rounded-full -z-10" />
-          
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <section className="pt-[164px] pb-[120px] px-6">
+          <div className="max-w-[620px] mx-auto text-center">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="inline-flex items-center gap-2 rounded-full border border-border-custom bg-surface px-4 py-1 text-sm font-medium text-accent mb-6">
-                <Zap className="h-4 w-4" />
-                <span>Powered by Featherless AI</span>
+              <div className="inline-flex items-center rounded-full border border-white/[0.08] px-3 py-1 mb-8">
+                <span className="font-mono text-[9px] uppercase tracking-widest text-white/40">
+                  Powered by Featherless AI
+                </span>
               </div>
-              <h1 className="font-syne text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
+              
+              <h1 className="text-[48px] md:text-[52px] font-light leading-[1.15] tracking-[-0.02em] mb-6">
                 Artificial Intelligence, <br />
-                <span className="text-accent">Unrestricted.</span>
+                <span className="text-white">Unrestricted.</span>
               </h1>
-              <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted mb-10 leading-relaxed">
+              
+              <p className="max-w-[420px] mx-auto text-[15px] font-light text-white/40 leading-relaxed mb-10">
                 Experience thousands of open-source models without filters. Fast, private, and powerful chat interface for the next generation of builders.
               </p>
+              
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link 
                   href="/register" 
-                  className="w-full sm:w-auto rounded-full bg-accent px-8 py-4 text-lg font-bold text-white hover:bg-accent-dim transition-all shadow-xl shadow-accent/20 flex items-center justify-center gap-2 group"
+                  className="bg-[#2563eb] h-11 px-8 rounded-[8px] text-[15px] font-medium text-white flex items-center justify-center hover:bg-blue-600 transition-colors w-full sm:w-auto"
                 >
                   Start Chatting 
-                  <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link 
                   href="/login" 
-                  className="w-full sm:w-auto rounded-full border border-border-custom bg-surface px-8 py-4 text-lg font-bold text-white hover:bg-border-custom transition-all"
+                  className="bg-transparent border border-white/[0.08] h-11 px-8 rounded-[8px] text-[15px] font-medium text-white flex items-center justify-center hover:bg-white/[0.03] transition-colors w-full sm:w-auto"
                 >
                   Sign In
                 </Link>
@@ -84,15 +60,20 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Divider */}
+        <div className="w-full h-px bg-white/[0.08]" />
+
         {/* Features Section */}
-        <section id="features" className="py-24 bg-surface/50 border-y border-border-custom">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="features" className="py-[120px] px-6">
+          <div className="container mx-auto max-w-5xl">
             <div className="text-center mb-16">
-              <h2 className="font-syne text-3xl md:text-4xl font-bold text-white mb-4">Everything you need</h2>
-              <p className="text-muted max-w-2xl mx-auto">Cortexa brings the power of thousands of models to your fingertips with a premium experience.</p>
+              <h2 className="text-[32px] font-light mb-4">Everything you need</h2>
+              <p className="text-[14px] text-white/40 font-light max-w-[420px] mx-auto">
+                Cortexa brings the power of thousands of models to your fingertips with a premium experience.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[1px] bg-white/[0.08] border border-white/[0.08] rounded-[12px] overflow-hidden">
               {[
                 {
                   icon: Bot,
@@ -115,56 +96,41 @@ export default function LandingPage() {
                   description: "Upload images and chat with multimodal models for visual understanding."
                 }
               ].map((feature, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="group rounded-2xl border border-border-custom bg-base p-8 hover:border-accent/50 transition-all hover:shadow-2xl hover:shadow-accent/5"
-                >
-                  <div className="h-12 w-12 rounded-xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                    <feature.icon className="h-6 w-6 text-accent" />
+                <div key={idx} className="bg-[#090909] p-8">
+                  <div className="mb-6">
+                    <feature.icon className="h-6 w-6 text-white/20 stroke-[1.5px]" />
                   </div>
-                  <h3 className="font-syne text-xl font-bold text-white mb-3">{feature.title}</h3>
-                  <p className="text-sm text-muted leading-relaxed">{feature.description}</p>
-                </motion.div>
+                  <h3 className="text-[14px] font-medium mb-2">{feature.title}</h3>
+                  <p className="text-[13px] font-light text-white/40 leading-relaxed">{feature.description}</p>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
+        {/* Divider */}
+        <div className="w-full h-px bg-white/[0.08]" />
+
         {/* CTA Section */}
-        <section className="py-24 relative overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-accent/5 blur-[100px] rounded-full -z-10" />
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="font-syne text-4xl md:text-5xl font-bold text-white mb-8">Ready to evolve your workflow?</h2>
+        <section className="py-[120px] px-6">
+          <div className="max-w-[500px] mx-auto text-center">
+            <h2 className="text-[36px] md:text-[40px] font-light leading-tight tracking-[-0.02em] mb-4">
+              Ready to evolve your workflow?
+            </h2>
+            <p className="text-[15px] font-light text-white/40 mb-10">
+              Join thousands of researchers and builders today.
+            </p>
             <Link 
               href="/register" 
-              className="inline-flex items-center gap-2 rounded-full bg-accent px-10 py-5 text-xl font-bold text-white hover:bg-accent-dim transition-all shadow-2xl shadow-accent/20 group"
+              className="bg-[#2563eb] h-12 px-10 rounded-[8px] text-[15px] font-medium text-white inline-flex items-center justify-center hover:bg-blue-600 transition-colors mx-auto"
             >
               Get Started for Free
-              <ChevronRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border-custom py-12 bg-base">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Cortexa" className="h-6 w-6 object-contain opacity-80" />
-            <span className="font-syne text-lg font-bold text-white tracking-tight">Cortexa</span>
-          </div>
-          <p className="text-sm text-muted">© 2026 Cortexa Platform. All rights reserved.</p>
-          <div className="flex items-center gap-6 text-sm font-medium text-muted">
-            <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-white transition-colors">Terms</Link>
-            <Link href="https://github.com/samkiell" className="hover:text-white transition-colors">GitHub</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

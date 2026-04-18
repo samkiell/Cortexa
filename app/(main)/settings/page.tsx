@@ -43,6 +43,8 @@ export default function SettingsPage() {
   const [supportSubject, setSupportSubject] = useState('');
   const [supportMessage, setSupportMessage] = useState('');
   const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
+  const [userTickets, setUserTickets] = useState<any[]>([]);
+  const [isLoadingTickets, setIsLoadingTickets] = useState(true);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -170,6 +172,26 @@ export default function SettingsPage() {
     }
   };
 
+  const fetchSupportTickets = async () => {
+    try {
+      const res = await fetch('/api/user/support');
+      if (res.ok) {
+        const data = await res.json();
+        setUserTickets(data);
+      }
+    } catch (err) {
+      console.error('Error fetching tickets:', err);
+    } finally {
+      setIsLoadingTickets(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'support') {
+      fetchSupportTickets();
+    }
+  }, [activeTab]);
+
   const handleSupportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supportSubject || !supportMessage) {
@@ -189,6 +211,7 @@ export default function SettingsPage() {
         toast.success('Report submitted successfully. We will look into it.');
         setSupportSubject('');
         setSupportMessage('');
+        fetchSupportTickets(); // Refresh the list
       } else {
         const data = await res.json();
         toast.error(data.error || 'Failed to submit report');
@@ -464,6 +487,48 @@ export default function SettingsPage() {
                           </button>
                         </div>
                       </form>
+                    </div>
+                  </section>
+                  
+                  <section>
+                    <div className="space-y-1 mb-4">
+                      <h2 className="text-[15px] font-medium text-[#f9fafb]">Report History</h2>
+                      <p className="text-[12px] text-[#6b7280]">Track the status of your past reports.</p>
+                    </div>
+                    <div className="bg-[#111111] border border-[#1a1a1a] rounded-2xl overflow-hidden divide-y divide-[#181818]">
+                      {isLoadingTickets ? (
+                        <div className="p-8 flex justify-center">
+                          <Loader2 className="h-5 w-5 animate-spin text-[#333]" />
+                        </div>
+                      ) : userTickets.length > 0 ? (
+                        userTickets.map((ticket) => (
+                          <div key={ticket._id} className="p-4 flex items-center justify-between group">
+                            <div className="min-w-0">
+                              <p className="text-[13px] font-medium text-[#f9fafb] truncate">{ticket.subject}</p>
+                              <p className="text-[11px] text-[#6b7280] font-mono mt-0.5">
+                                {new Date(ticket.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${
+                                ticket.status === 'resolved' 
+                                  ? 'bg-green-500/10 text-green-500 border-green-500/20' 
+                                  : ticket.status === 'in-progress'
+                                  ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                  : ticket.status === 'closed'
+                                  ? 'bg-red-500/10 text-[#4b5563] border-[#2a2a2a]'
+                                  : 'bg-accent/10 text-accent border-accent/20'
+                              }`}>
+                                {ticket.status}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-8 text-center bg-[#0d0d0d]/50">
+                          <p className="text-[12px] text-[#4b5563]">No reports submitted yet.</p>
+                        </div>
+                      )}
                     </div>
                   </section>
                   

@@ -2,21 +2,17 @@ import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-import { Syne, DM_Sans, Geist_Mono } from 'next/font/google';
+import { DM_Sans, Geist_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { SidebarProvider } from '@/components/providers/SidebarProvider';
 import { ModelProvider } from '@/contexts/ModelContext';
 import SessionProviderWrapper from '@/components/providers/SessionProviderWrapper';
 import './globals.css';
 
-const syne = Syne({
-  variable: '--font-syne',
-  subsets: ['latin'],
-});
-
 const dmSans = DM_Sans({
   variable: '--font-dm-sans',
   subsets: ['latin'],
+  weight: ['300', '500'],
 });
 
 const geistMono = Geist_Mono({
@@ -53,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${dmSans.variable} ${geistMono.variable} antialiased`}
+      className={`${dmSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="bg-base text-text-custom font-dm-sans">
         <SessionProviderWrapper>

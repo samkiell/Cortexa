@@ -90,10 +90,12 @@ export default function ModelVisibilityPage() {
     }
   };
 
-  const filteredLibrary = allModels.filter(m => 
-    m.id.toLowerCase().includes(searchQuery.toLowerCase()) && 
-    !CURATED_MODELS.some(cm => cm.id === m.id)
-  );
+  const filteredLibrary = allModels
+    .filter(m => 
+      m.id.toLowerCase().includes(searchQuery.toLowerCase()) && 
+      !CURATED_MODELS.some(cm => cm.id === m.id)
+    )
+    .slice(0, searchQuery ? 500 : 100);
 
   const dynamicModels = visibleModels.filter(id => !CURATED_MODELS.some(cm => cm.id === id));
 
@@ -249,6 +251,17 @@ export default function ModelVisibilityPage() {
           <div className="flex flex-col items-center justify-center py-20 bg-[#0d0d0d] rounded-3xl border border-dashed border-[#1a1a1a]">
             <Loader2 className="h-8 w-8 animate-spin text-[#333] mb-3" />
             <p className="text-[#6b7280] text-sm">Syncing with Featherless repository...</p>
+          </div>
+        ) : allModels.length === 0 && !isFetchingLibrary ? (
+          <div className="flex flex-col items-center justify-center py-20 bg-[#0d0d0d] rounded-3xl border border-dashed border-red-500/20">
+            <p className="text-red-500 text-sm font-medium mb-2">Failed to connect to Featherless</p>
+            <p className="text-[#4b4b4b] text-[12px] max-w-[300px] text-center mb-6">Make sure your API key is correct in Platform Settings.</p>
+            <button 
+              onClick={fetchData}
+              className="px-4 py-2 bg-[#1a1a1a] text-[#f9fafb] rounded-xl text-xs font-bold hover:bg-[#222] transition-all"
+            >
+              Retry Connection
+            </button>
           </div>
         ) : (
           <div className="bg-[#111111] border border-[#1a1a1a] rounded-3xl overflow-hidden">
