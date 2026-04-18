@@ -187,7 +187,20 @@ export default function ChatInterface({
         }),
       });
 
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) {
+        const errorData = await response.text();
+        // If the error is an HTML page (standard Next.js error), show a generic message
+        if (errorData.includes('<!DOCTYPE html>') || errorData.includes('<html')) {
+          throw new Error('A server error occurred. Please try again later.');
+        }
+        
+        try {
+          const parsed = JSON.parse(errorData);
+          throw new Error(parsed.error || parsed.message || 'Error occurred');
+        } catch (e) {
+          throw new Error(errorData || 'Failed to get response');
+        }
+      }
 
       const reader = response.body?.getReader();
       if (!reader) throw new Error('No reader available');
@@ -256,8 +269,10 @@ export default function ChatInterface({
       }
 
     } catch (error: any) {
-      toast.error(error.message || 'Error occurred');
-      console.error(error);
+      // Professional error handling: don't show full HTML or object logs
+      const msg = typeof error === 'string' ? error : (error.message || 'An unexpected error occurred');
+      toast.error(msg);
+      console.error('Chat error:', error);
     } finally {
       setIsLoading(false);
     }

@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -87,8 +88,13 @@ export async function POST(req: Request) {
     });
 
     const modelInfo = CURATED_MODELS.find(m => m.id === modelId);
-    const isVisionModel = modelInfo?.vision || false;
-    const supportsTools = modelInfo?.supportsTools || false;
+    if (!modelInfo) {
+      console.error(`Model not found: ${modelId}`);
+      return NextResponse.json({ error: 'Selected model is not available.' }, { status: 400 });
+    }
+
+    const isVisionModel = modelInfo.vision || false;
+    const supportsTools = modelInfo.supportsTools || false;
     const canSearch = searchEnabled && supportsTools;
 
     const formattedMessages = messages.map((m: any, idx: number) => {
@@ -109,16 +115,22 @@ export async function POST(req: Request) {
     let initialResponse: any = null;
 
     if (canSearch) {
-      initialResponse = await openai.chat.completions.create({
-        model: modelId,
-        messages: formattedMessages,
-        tools: [searchTool as any],
-        tool_choice: 'auto',
-      });
+      try {
+        initialResponse = await openai.chat.completions.create({
+          model: modelId,
+          messages: formattedMessages,
+          tools: [searchTool as any],
+          tool_choice: 'auto',
+        });
 
-      const message = initialResponse.choices[0].message;
-      if (message.tool_calls) {
-        toolCalls = message.tool_calls;
+        const message = initialResponse?.choices?.[0]?.message;
+        if (message?.tool_calls) {
+          toolCalls = message.tool_calls;
+        }
+      } catch (err: any) {
+        console.error('Initial completion error with tools:', err);
+        // Fallback to standard completion if tools fail
+        canSearch === false;
       }
     }
 
@@ -126,45 +138,89 @@ export async function POST(req: Request) {
 
     if (toolCalls.length > 0) {
       const toolCall = toolCalls[0];
-      const args = JSON.parse(toolCall.function.arguments);
-      const query = args.query;
+      let query;
+      try {
+        const args = JSON.parse(toolCall.function.arguments);
+        query = args.query;
+      } catch (e) {
+        console.error('Failed to parse tool arguments:', e);
+        // Continue with standard flow instead of crashing
+        toolCalls = [];
+      }
 
-      // Start SSE stream with search signal
+      if (query) {
+        const stream = new ReadableStream({
+          async start(controller) {
+            try {
+              // Signal search start
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'search_start', query })}\n\n`));
+
+              const searchResults = await webSearch(query);
+              
+              const conversationWithTool = [
+                ...formattedMessages,
+                initialResponse.choices[0].message,
+                {
+                  role: 'tool',
+                  tool_call_id: toolCall.id,
+                  content: JSON.stringify(searchResults)
+                }
+              ];
+
+              const secondResponse = await openai.chat.completions.create({
+                model: modelId,
+                messages: conversationWithTool as any,
+                stream: true,
+              });
+
+              // Signal sources before tokens
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'sources', sources: searchResults.results })}\n\n`));
+
+              for await (const chunk of secondResponse) {
+                const content = chunk.choices[0]?.delta?.content || '';
+                if (content) {
+                  controller.enqueue(encoder.encode(content));
+                }
+              }
+            } catch (err: any) {
+              console.error('Streaming error in tool loop:', err);
+              controller.error(err);
+            } finally {
+              controller.close();
+            }
+          },
+        });
+
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+          },
+        });
+      }
+    }
+
+    // Standard streaming flow (no tool call or tools disabled)
+    try {
+      const response = await openai.chat.completions.create({
+        model: modelId,
+        messages: formattedMessages,
+        stream: true,
+        max_tokens: 2048,
+      });
+
       const stream = new ReadableStream({
         async start(controller) {
           try {
-            // Signal search start
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'search_start', query })}\n\n`));
-
-            const searchResults = await webSearch(query);
-            
-            const conversationWithTool = [
-              ...formattedMessages,
-              initialResponse.choices[0].message,
-              {
-                role: 'tool',
-                tool_call_id: toolCall.id,
-                content: JSON.stringify(searchResults)
-              }
-            ];
-
-            const secondResponse = await openai.chat.completions.create({
-              model: modelId,
-              messages: conversationWithTool as any,
-              stream: true,
-            });
-
-            // Signal sources before tokens
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'sources', sources: searchResults.results })}\n\n`));
-
-            for await (const chunk of secondResponse) {
+            for await (const chunk of response) {
               const content = chunk.choices[0]?.delta?.content || '';
               if (content) {
                 controller.enqueue(encoder.encode(content));
               }
             }
           } catch (err: any) {
-            console.error('Streaming error in tool loop:', err);
+            console.error('Streaming error in route:', err);
             controller.error(err);
           } finally {
             controller.close();
@@ -174,48 +230,21 @@ export async function POST(req: Request) {
 
       return new Response(stream, {
         headers: {
-          'Content-Type': 'text/event-stream',
+          'Content-Type': 'text/plain; charset=utf-8',
           'Cache-Control': 'no-cache',
           'Connection': 'keep-alive',
         },
       });
+    } catch (apiError: any) {
+      console.error('Featherless API Error:', apiError);
+      return NextResponse.json({ 
+        error: apiError.message || 'Error from AI provider. Please try again later.' 
+      }, { status: 500 });
     }
-
-    // Standard streaming flow (no tool call or tools disabled)
-    const response = await openai.chat.completions.create({
-      model: modelId,
-      messages: formattedMessages,
-      stream: true,
-      max_tokens: 2048,
-    });
-
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of response) {
-            const content = chunk.choices[0]?.delta?.content || '';
-            if (content) {
-              controller.enqueue(encoder.encode(content));
-            }
-          }
-        } catch (err: any) {
-          console.error('Streaming error in route:', err);
-          controller.error(err);
-        } finally {
-          controller.close();
-        }
-      },
-    });
-
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
-    });
   } catch (error: any) {
-    console.error('Chat error:', error);
-    return new Response(error.message || 'Error in chat completion', { status: 500 });
+    console.error('Global Chat API error:', error);
+    return NextResponse.json({ 
+      error: 'An internal server error occurred.' 
+    }, { status: 500 });
   }
 }
