@@ -11,12 +11,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const formData = await req.json(); // Wait, the instruction said multipart form data
-    // But usually base64 is easier if it's already converted on client.
-    // Instruction said: "Accept multipart form data with an image file"
-    // "Convert to base64 and store as avatarUrl"
-    
-    // To handle multipart/form-data in Next.js App Router:
+    // Handle multipart/form-data for image uploads
     const data = await req.formData();
     const file: File | null = data.get('file') as unknown as File;
 
@@ -42,7 +37,7 @@ export async function PUT(req: Request) {
     const user = await User.findOneAndUpdate(
       { email: session.user.email },
       { avatarUrl: base64Image },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!user) {
