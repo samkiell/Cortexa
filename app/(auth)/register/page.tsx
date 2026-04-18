@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { UserPlus, Mail, Lock, User, Loader2, ShieldAlert, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Loader2, ShieldAlert, ArrowLeft, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [registrationAllowed, setRegistrationAllowed] = useState<boolean | null>(null);
   const [step, setStep] = useState<1 | 2>(1); // 1: Info, 2: OTP
   const router = useRouter();
@@ -197,13 +198,25 @@ export default function RegisterPage() {
                     <Lock className="h-5 w-5 text-muted" />
                   </div>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full rounded-lg border border-border-custom bg-base py-3 pl-10 pr-3 text-white placeholder-muted focus:border-accent focus:outline-none transitions-all"
+                    className="block w-full rounded-lg border border-border-custom bg-base py-3 pl-10 pr-10 text-white placeholder-muted focus:border-accent focus:outline-none transitions-all"
                     placeholder="Password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted hover:text-white transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
                 </div>
               </div>
 

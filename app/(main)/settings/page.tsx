@@ -13,7 +13,9 @@ import {
   ChevronRight,
   Camera,
   Loader2,
-  LifeBuoy
+  LifeBuoy,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -32,6 +34,8 @@ export default function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [isAvatarLoading, setIsAvatarLoading] = useState(false);
   const [newAvatarFile, setNewAvatarFile] = useState<File | null>(null);
   
@@ -51,11 +55,21 @@ export default function SettingsPage() {
 
   // Sync state when session loads
   useEffect(() => {
-    if (session?.user) {
-      setName(session.user.name || '');
-      setEmail(session.user.email || '');
-      setAvatar(session.user.image || '');
-    }
+    const fetchProfile = async () => {
+      if (!session) return;
+      try {
+        const res = await fetch('/api/user/me');
+        if (res.ok) {
+          const data = await res.json();
+          setName(data.name || session.user?.name || '');
+          setEmail(data.email || session.user?.email || '');
+          setAvatar(data.avatarUrl || '');
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile', err);
+      }
+    };
+    fetchProfile();
   }, [session]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -301,23 +315,41 @@ export default function SettingsPage() {
                       <div className="p-6 rounded-2xl bg-[#111111] border border-[#1a1a1a] space-y-4">
                         <div className="space-y-1.5">
                           <label className="text-[12px] text-[#6b7280]">Current Password</label>
-                          <input 
-                            type="password"
-                            value={currentPassword}
-                            onChange={(e) => setCurrentPassword(e.target.value)}
-                            className="w-full bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg px-3 py-2 text-[13px] text-[#f9fafb] focus:border-[#3b82f6]/40 focus:ring-1 focus:ring-[#3b82f6]/10 outline-none transition-all"
-                            placeholder="••••••••"
-                          />
+                          <div className="relative">
+                            <input 
+                              type={showCurrentPassword ? "text" : "password"}
+                              value={currentPassword}
+                              onChange={(e) => setCurrentPassword(e.target.value)}
+                              className="w-full bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg pl-3 pr-10 py-2 text-[13px] text-[#f9fafb] focus:border-[#3b82f6]/40 focus:ring-1 focus:ring-[#3b82f6]/10 outline-none transition-all"
+                              placeholder="••••••••"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                              className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#6b7280] hover:text-[#f9fafb] transition-colors"
+                            >
+                              {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-[12px] text-[#6b7280]">New Password</label>
-                          <input 
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg px-3 py-2 text-[13px] text-[#f9fafb] focus:border-[#3b82f6]/40 focus:ring-1 focus:ring-[#3b82f6]/10 outline-none transition-all"
-                            placeholder="••••••••"
-                          />
+                          <div className="relative">
+                            <input 
+                              type={showNewPassword ? "text" : "password"}
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              className="w-full bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg pl-3 pr-10 py-2 text-[13px] text-[#f9fafb] focus:border-[#3b82f6]/40 focus:ring-1 focus:ring-[#3b82f6]/10 outline-none transition-all"
+                              placeholder="••••••••"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowNewPassword(!showNewPassword)}
+                              className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#6b7280] hover:text-[#f9fafb] transition-colors"
+                            >
+                              {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </section>

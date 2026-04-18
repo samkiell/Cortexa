@@ -291,9 +291,16 @@ export default function ForgotPasswordPage() {
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="block w-full bg-base border border-border-custom rounded-lg py-3 pl-10 pr-3 text-text-custom placeholder-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all"
+                      className="block w-full bg-base border border-border-custom rounded-lg py-3 pl-10 pr-10 text-text-custom placeholder-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all"
                       placeholder="Confirm New Password"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted hover:text-text-custom"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
                   </div>
                 </div>
 

@@ -53,7 +53,6 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
-          image: user.avatarUrl,
           suspended: user.suspended,
         };
       },
@@ -81,7 +80,6 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
-        token.image = user.image;
         token.suspended = user.suspended;
       }
 
@@ -93,20 +91,15 @@ export const authOptions: NextAuthOptions = {
           token.id = dbUser._id.toString();
           token.role = dbUser.role;
           token.suspended = dbUser.suspended;
-          token.image = dbUser.avatarUrl;
         }
       }
-      // Handle the 'update' trigger from useSession().update()
-      if (trigger === "update" && session?.image) {
-        token.image = session.image;
-      }
+      // Removal of large session image updates
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
-        session.user.image = token.image;
         session.user.suspended = token.suspended;
       }
       return session;

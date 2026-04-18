@@ -6,12 +6,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { LogIn, Mail, Lock, Loader2 } from 'lucide-react';
+import { LogIn, Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,13 +108,25 @@ export default function LoginPage() {
                 <Lock className="h-5 w-5 text-muted" />
               </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full rounded-lg border border-border-custom bg-base py-3 pl-10 pr-3 text-text-custom placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm transitions-all"
+                className="block w-full rounded-lg border border-border-custom bg-base py-3 pl-10 pr-10 text-text-custom placeholder-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm transitions-all"
                 placeholder="Password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted hover:text-white transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
             </div>
             <div className="flex justify-end">
               <Link href="/forgot-password" className="text-xs font-medium text-accent hover:text-accent-dim transition-colors">
