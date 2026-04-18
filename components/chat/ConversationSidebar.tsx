@@ -38,10 +38,27 @@ export default function ConversationSidebar() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ avatarUrl?: string; name?: string } | null>(null);
   
   // Modal State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [targetDeleteId, setTargetDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!session) return;
+      try {
+        const res = await fetch('/api/user/me');
+        if (res.ok) {
+          const data = await res.json();
+          setUserProfile(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile', err);
+      }
+    };
+    fetchProfile();
+  }, [session]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -229,7 +246,15 @@ export default function ConversationSidebar() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="h-7 w-7 rounded-full bg-[#1d4ed8] flex items-center justify-center shrink-0 overflow-hidden">
-                {session?.user?.image ? (
+                {userProfile?.avatarUrl ? (
+                  <NextImage 
+                    src={userProfile.avatarUrl} 
+                    alt="User" 
+                    width={28}
+                    height={28}
+                    className="h-full w-full object-cover" 
+                  />
+                ) : session?.user?.image ? (
                   <NextImage 
                     src={session.user.image} 
                     alt="User" 

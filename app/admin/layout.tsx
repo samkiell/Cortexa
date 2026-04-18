@@ -8,7 +8,8 @@ import {
   Users, 
   ChevronLeft,
   LayoutDashboard,
-  Sliders
+  Sliders,
+  LifeBuoy
 } from 'lucide-react';
 
 export default async function AdminLayout({
@@ -61,6 +62,13 @@ export default async function AdminLayout({
           >
             <Sliders className="h-4 w-4" />
             Model Visibility
+          </Link>
+          <Link 
+            href="/admin/support" 
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-base hover:text-white transition-all transition-colors"
+          >
+            <LifeBuoy className="h-4 w-4" />
+            Reports
           </Link>
         </nav>
 

@@ -12,7 +12,8 @@ import {
   ArrowLeft,
   ChevronRight,
   Camera,
-  Loader2
+  Loader2,
+  LifeBuoy
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -34,12 +35,18 @@ export default function SettingsPage() {
   const [isAvatarLoading, setIsAvatarLoading] = useState(false);
   const [newAvatarFile, setNewAvatarFile] = useState<File | null>(null);
   
+  // Support State
+  const [supportSubject, setSupportSubject] = useState('');
+  const [supportMessage, setSupportMessage] = useState('');
+  const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const tabs = [
     { id: 'profile', name: 'Profile', icon: User },
     { id: 'general', name: 'General', icon: Monitor },
     { id: 'privacy', name: 'Privacy', icon: Shield },
+    { id: 'support', name: 'Support', icon: LifeBuoy },
   ];
 
   // Sync state when session loads
@@ -146,6 +153,36 @@ export default function SettingsPage() {
       } catch (err) {
         toast.error('Error clearing history');
       }
+    }
+  };
+
+  const handleSupportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supportSubject || !supportMessage) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    
+    setIsSubmittingSupport(true);
+    try {
+      const res = await fetch('/api/support', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: supportSubject, message: supportMessage }),
+      });
+      
+      if (res.ok) {
+        toast.success('Report submitted successfully. We will look into it.');
+        setSupportSubject('');
+        setSupportMessage('');
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Failed to submit report');
+      }
+    } catch (err) {
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsSubmittingSupport(false);
     }
   };
 
@@ -346,6 +383,61 @@ export default function SettingsPage() {
                         </div>
                         <Trash2 className="h-4 w-4 text-red-900/40 group-hover:text-red-500 transition-colors" />
                       </button>
+                    </div>
+                  </section>
+                </motion.div>
+              )}
+
+              {activeTab === 'support' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-8"
+                >
+                  <section>
+                    <div className="space-y-1 mb-4">
+                      <h2 className="text-[15px] font-medium text-[#f9fafb]">Contact & Support</h2>
+                      <p className="text-[12px] text-[#6b7280]">Found a bug or have a feature request? Let us know.</p>
+                    </div>
+                    <div className="p-6 rounded-2xl bg-[#111111] border border-[#1a1a1a]">
+                      <form onSubmit={handleSupportSubmit} className="space-y-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[12px] text-[#6b7280]">Subject</label>
+                          <input 
+                            type="text"
+                            value={supportSubject}
+                            onChange={(e) => setSupportSubject(e.target.value)}
+                            className="w-full bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg px-3 py-2 text-[13px] text-[#f9fafb] focus:border-[#3b82f6]/40 focus:ring-1 focus:ring-[#3b82f6]/10 outline-none transition-all"
+                            placeholder="What's going on?"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[12px] text-[#6b7280]">Message</label>
+                          <textarea 
+                            value={supportMessage}
+                            onChange={(e) => setSupportMessage(e.target.value)}
+                            rows={4}
+                            className="w-full bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg px-3 py-2 text-[13px] text-[#f9fafb] focus:border-[#3b82f6]/40 focus:ring-1 focus:ring-[#3b82f6]/10 outline-none transition-all resize-none"
+                            placeholder="Describe your issue or feedback in detail..."
+                          />
+                        </div>
+                        <div className="flex justify-end pt-2">
+                          <button
+                            type="submit"
+                            disabled={isSubmittingSupport}
+                            className="bg-[#f9fafb] text-[#0d0d0d] px-4 py-2 rounded-lg text-[13px] font-medium hover:bg-[#e2e8f0] transition-colors disabled:opacity-50 flex items-center gap-2"
+                          >
+                            {isSubmittingSupport && <Loader2 className="h-4 w-4 animate-spin" />}
+                            Submit Report
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </section>
+                  
+                  <section>
+                    <div className="p-6 rounded-2xl bg-[#111111]/50 border border-[#1a1a1a] border-dashed text-center">
+                      <p className="text-[12px] text-[#6b7280]">Our team typically responds within 24-48 hours.</p>
                     </div>
                   </section>
                 </motion.div>
