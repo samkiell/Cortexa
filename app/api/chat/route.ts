@@ -59,7 +59,7 @@ export async function POST(req: Request) {
         limitDoc = await RateLimit.findOneAndUpdate(
           { userId },
           { count: 1, windowStart: hourStart },
-          { upsert: true, new: true }
+          { upsert: true, returnDocument: 'after' }
         );
       } else if (limitDoc.count >= 30) {
         return new Response('Rate limit exceeded. Max 30 messages per hour.', { status: 429 });
@@ -95,16 +95,19 @@ export async function POST(req: Request) {
 
     const isVisionModel = modelInfo.vision || false;
     const supportsTools = modelInfo.supportsTools || false;
-    const canSearch = searchEnabled && supportsTools;
+    let canSearch = searchEnabled && supportsTools;
 
     const formattedMessages = messages.map((m: any, idx: number) => {
       if (idx === messages.length - 1 && imageBase64 && isVisionModel) {
-        const base64Data = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
+        let imageUrl = imageBase64;
+        if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
+          imageUrl = `data:image/jpeg;base64,${imageUrl}`;
+        }
         return {
           role: m.role,
           content: [
             { type: 'text', text: m.content },
-            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Data}` } }
+            { type: 'image_url', image_url: { url: imageUrl } }
           ]
         };
       }
@@ -130,7 +133,7 @@ export async function POST(req: Request) {
       } catch (err: any) {
         console.error('Initial completion error with tools:', err);
         // Fallback to standard completion if tools fail
-        canSearch === false;
+        canSearch = false;
       }
     }
 
@@ -238,7 +241,7 @@ export async function POST(req: Request) {
     } catch (apiError: any) {
       console.error('Featherless API Error:', apiError);
       return NextResponse.json({ 
-        error: apiError.message || 'Error from AI provider. Please try again later.' 
+        error: apiError.error || apiError.message || 'Error from AI provider. Please try again later.' 
       }, { status: 500 });
     }
   } catch (error: any) {

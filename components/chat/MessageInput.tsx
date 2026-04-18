@@ -18,6 +18,8 @@ interface MessageInputProps {
   supportsTools?: boolean;
   image: string | null;
   setImage: (image: string | null) => void;
+  searchEnabled: boolean;
+  setSearchEnabled: (val: boolean) => void;
 }
 
 export default function MessageInput({ 
@@ -26,14 +28,27 @@ export default function MessageInput({
   isVisionCapable, 
   supportsTools = false,
   image,
-  setImage
+  setImage,
+  searchEnabled,
+  setSearchEnabled
 }: MessageInputProps) {
   const [text, setText] = useState('');
-  const [searchEnabled, setSearchEnabled] = useLocalStorage('cortexaSearchEnabled', false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  const [mounted, setMounted] = useState(false);
   const { isListening, transcript, startListening, stopListening, isSupported: isVoiceSupported } = useVoiceInput();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Auto-focus on mount (desktop only)
+  useEffect(() => {
+    if (mounted && textareaRef.current && window.innerWidth > 768) {
+      textareaRef.current.focus();
+    }
+  }, [mounted]);
 
   // Auto-grow textarea
   useEffect(() => {
@@ -57,6 +72,7 @@ export default function MessageInput({
     setImage(null);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
+      if (window.innerWidth > 768) textareaRef.current.focus();
     }
   };
 
@@ -141,7 +157,7 @@ export default function MessageInput({
                   </button>
                 )}
                 
-                {isVoiceSupported && (
+                {mounted && isVoiceSupported && (
                   <div className="relative flex items-center justify-center">
                     <button
                       onClick={toggleVoice}

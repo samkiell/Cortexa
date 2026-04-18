@@ -30,6 +30,7 @@ export default function ChatInterface({
   const { data: session } = useSession();
   const { models, getModelById, isLoading: isModelsLoading } = useModels();
   const pathname = usePathname();
+  const [searchEnabled, setSearchEnabled] = useState(false);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [conversationId, setConversationId] = useState<string | undefined>(initialConvId);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +38,17 @@ export default function ChatInterface({
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [image, setImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Sync searchEnabled with localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('cortexaSearchEnabled');
+    if (saved) setSearchEnabled(JSON.parse(saved));
+  }, []);
+
+  // Update localStorage when searchEnabled changes
+  useEffect(() => {
+    localStorage.setItem('cortexaSearchEnabled', JSON.stringify(searchEnabled));
+  }, [searchEnabled]);
 
   // Reset when navigating to 'New Chat'
   useEffect(() => {
@@ -148,7 +160,13 @@ export default function ChatInterface({
     });
   }, []);
 
-  const executeChat = async (currentMessages: Message[], convId: string | undefined, imageUrl?: string, searchEnabled?: boolean) => {
+  const executeChat = async (
+    currentMessages: Message[], 
+    convId: string | undefined, 
+    imageUrl?: string, 
+    searchEnabled?: boolean,
+    retryCount = 0
+  ) => {
     setIsLoading(true);
     // Explicitly scroll to user message
     setTimeout(() => scrollToBottom('smooth'), 50);
@@ -196,9 +214,11 @@ export default function ChatInterface({
         
         try {
           const parsed = JSON.parse(errorData);
-          throw new Error(parsed.error || parsed.message || 'Error occurred');
-        } catch (e) {
-          throw new Error(errorData || 'Failed to get response');
+          const msg = parsed.error?.message || parsed.error || parsed.message || 'An unexpected server error occurred';
+          throw new Error(msg);
+        } catch (e: any) {
+          if (e.message && !e.message.includes('Unexpected token')) throw e;
+          throw new Error(errorData || 'Failed to get response from server');
         }
       }
 
@@ -269,6 +289,14 @@ export default function ChatInterface({
       }
 
     } catch (error: any) {
+      // Automatic retry for capacity issues
+      const isCapacityError = error.message?.toLowerCase().includes('capacity') || error.message?.toLowerCase().includes('overloaded');
+      if (isCapacityError && retryCount < 1) {
+        toast.info("Model at capacity, retrying in 2 seconds...");
+        await new Promise(r => setTimeout(r, 2000));
+        return executeChat(currentMessages, convId, imageUrl, searchEnabled, retryCount + 1);
+      }
+
       // Professional error handling: don't show full HTML or object logs
       const msg = typeof error === 'string' ? error : (error.message || 'An unexpected error occurred');
       toast.error(msg);
@@ -304,7 +332,7 @@ export default function ChatInterface({
       const truncatedMessages = messages.slice(0, index + 1);
       truncatedMessages[index] = { ...messageToEdit, content: newContent };
       setMessages(truncatedMessages);
-      executeChat(truncatedMessages, conversationId);
+      executeChat(truncatedMessages, conversationId, undefined, searchEnabled);
     } else {
       // Just update assistant message
       const updatedMessages = [...messages];
@@ -320,7 +348,22 @@ export default function ChatInterface({
     }
   };
 
-  const handleSend = async (content: string, imageUrl?: string, searchEnabled?: boolean) => {
+  const handleRegenerate = async () => {
+    if (messages.length < 2 || isLoading) return;
+    
+    // Last message must be from assistant to regenerate it
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg.role !== 'assistant') return;
+
+    // Remove the last assistant message and state history
+    const history = messages.slice(0, -1);
+    setMessages(history);
+    
+    // Re-run with the same history
+    executeChat(history, conversationId, undefined, searchEnabled);
+  };
+
+  const handleSend = async (content: string, imageUrl?: string, sendSearchEnabled?: boolean) => {
     if (!content.trim() && !imageUrl) return;
 
     const userMessage: Message = { 
@@ -473,7 +516,7 @@ export default function ChatInterface({
                     <MessageBubble 
                       message={m} 
                       isLast={virtualRow.index === messages.length - 1}
-                      onRegenerate={() => handleSend(messages[messages.length-2].content, messages[messages.length-2].imageUrl)}
+                      onRegenerate={handleRegenerate}
                       onDelete={() => handleDeleteMessage(virtualRow.index)}
                       onEdit={(newContent) => handleEditMessage(virtualRow.index, newContent)}
                     />
@@ -521,6 +564,8 @@ export default function ChatInterface({
         supportsTools={supportsTools}
         image={image}
         setImage={setImage}
+        searchEnabled={searchEnabled}
+        setSearchEnabled={setSearchEnabled}
       />
     </div>
   );
