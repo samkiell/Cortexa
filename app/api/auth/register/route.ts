@@ -3,9 +3,7 @@ import dbConnect from '@/lib/db';
 import User from '@/lib/models/User';
 import Settings from '@/lib/models/Settings';
 import OTP from '@/lib/models/OTP';
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendEmail } from '@/lib/mail';
 
 export async function POST(req: Request) {
   try {
@@ -36,9 +34,8 @@ export async function POST(req: Request) {
     await OTP.deleteMany({ email }); // Clear any previous ones
     await OTP.create({ email, code, expiresAt });
 
-    // Send styled email via Resend
-    const { error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'Cortexa <onboarding@resend.dev>',
+    // Send styled email via Nodemailer
+    await sendEmail({
       to: email,
       subject: 'Verify your Cortexa account',
       html: `
@@ -52,11 +49,6 @@ export async function POST(req: Request) {
         </div>
       `,
     });
-
-    if (error) {
-      console.error('Resend error:', error);
-      return new Response('Failed to send verification code', { status: 500 });
-    }
 
     return NextResponse.json({ message: 'Verification code sent to email' }, { status: 200 });
   } catch (error: any) {

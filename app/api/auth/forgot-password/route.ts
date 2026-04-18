@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import User from '@/lib/models/User';
 import OTP from '@/lib/models/OTP';
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendEmail } from '@/lib/mail';
 
 export async function POST(req: Request) {
   try {
@@ -35,9 +33,8 @@ export async function POST(req: Request) {
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     });
 
-    // Send email via Resend
-    const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'Cortexa <onboarding@resend.dev>',
+    // Send email via Nodemailer
+    await sendEmail({
       to: email,
       subject: 'Your Cortexa verification code',
       html: `
@@ -54,12 +51,6 @@ export async function POST(req: Request) {
         </div>
       `,
     });
-
-    if (error) {
-      console.error('Resend error:', error);
-      // We still return 200 in development or production depending on policy,
-      // but here we show success based on instructions.
-    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
