@@ -14,6 +14,7 @@ export default function Navbar() {
         
         <nav className="hidden md:flex items-center gap-8">
           <Link href="/#features" className="text-[13px] text-white/40 hover:text-white transition-colors">Features</Link>
+          <Link href="/support" className="text-[13px] text-white/40 hover:text-white transition-colors">Support</Link>
           <Link href="https://github.com/samkiell" className="text-[13px] text-white/40 hover:text-white transition-colors">Source</Link>
         </nav>
 

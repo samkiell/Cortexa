@@ -20,25 +20,25 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="pt-[164px] pb-[120px] px-6">
+        <section className="pt-[120px] pb-[80px] px-6">
           <div className="max-w-[620px] mx-auto text-center">
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="inline-flex items-center rounded-full border border-white/[0.08] px-3 py-1 mb-8">
+              <div className="inline-flex items-center rounded-full border border-white/[0.08] px-3 py-1 mb-6">
                 <span className="font-mono text-[9px] uppercase tracking-widest text-white/40">
                   Powered by Featherless AI
                 </span>
               </div>
               
-              <h1 className="text-[48px] md:text-[52px] font-light leading-[1.15] tracking-[-0.02em] mb-6">
+              <h1 className="text-[48px] md:text-[52px] font-light leading-[1.1] tracking-[-0.02em] mb-4">
                 Artificial Intelligence, <br />
                 <span className="text-white">Unrestricted.</span>
               </h1>
               
-              <p className="max-w-[420px] mx-auto text-[15px] font-light text-white/40 leading-relaxed mb-10">
+              <p className="max-w-[420px] mx-auto text-[15px] font-light text-white/40 leading-relaxed mb-8">
                 Experience thousands of open-source models without filters. Fast, private, and powerful chat interface for the next generation of builders.
               </p>
               
@@ -64,9 +64,9 @@ export default function LandingPage() {
         <div className="w-full h-px bg-white/[0.08]" />
 
         {/* Features Section */}
-        <section id="features" className="py-[120px] px-6">
+        <section id="features" className="py-[80px] px-6">
           <div className="container mx-auto max-w-5xl">
-            <div className="text-center mb-16">
+            <div className="text-center mb-12">
               <h2 className="text-[32px] font-light mb-4">Everything you need</h2>
               <p className="text-[14px] text-white/40 font-light max-w-[420px] mx-auto">
                 Cortexa brings the power of thousands of models to your fingertips with a premium experience.

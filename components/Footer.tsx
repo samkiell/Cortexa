@@ -11,8 +11,9 @@ export default function Footer() {
         </div>
         
         <div className="flex items-center gap-8">
-          <Link href="#" className="text-[12px] text-white/40 hover:text-white transition-colors">Privacy</Link>
-          <Link href="#" className="text-[12px] text-white/40 hover:text-white transition-colors">Terms</Link>
+          <Link href="/privacy" className="text-[12px] text-white/40 hover:text-white transition-colors">Privacy</Link>
+          <Link href="/terms" className="text-[12px] text-white/40 hover:text-white transition-colors">Terms</Link>
+          <Link href="/support" className="text-[12px] text-white/40 hover:text-white transition-colors">Support</Link>
           <Link href="https://github.com/samkiell" className="text-[12px] text-white/40 hover:text-white transition-colors">GitHub</Link>
         </div>
       </div>

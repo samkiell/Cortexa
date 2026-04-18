@@ -3,16 +3,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  LifeBuoy, 
   Mail, 
   MessageSquare, 
-  ArrowLeft,
   Loader2,
-  FileText,
   BadgeCheck,
   Send
 } from 'lucide-react';
-import Link from 'next/link';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { toast } from 'sonner';
 
 export default function PublicSupportPage() {
@@ -52,129 +50,109 @@ export default function PublicSupportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0d0d] font-inter text-[#f9fafb] selection:bg-accent/30 flex flex-col items-center justify-center p-6 bg-grid-white/[0.02] relative">
-      {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[400px] bg-accent/10 blur-[120px] rounded-full -z-10 opacity-50" />
+    <div className="flex min-h-screen flex-col bg-[#090909] text-white selection:bg-blue-500/30">
+      <Navbar />
       
-      <div className="w-full max-w-[500px] space-y-8">
-        <div className="flex flex-col items-center text-center space-y-4">
-          <Link 
-            href="/login" 
-            className="flex items-center gap-2 text-[13px] text-[#6b7280] hover:text-[#f9fafb] transition-colors mb-4 group"
-          >
-            <ArrowLeft className="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" />
-            Back to home
-          </Link>
-          <div className="h-16 w-16 bg-accent/10 rounded-2xl flex items-center justify-center border border-accent/20">
-            <LifeBuoy className="h-8 w-8 text-accent" />
+      <main className="flex-1 flex items-center justify-center p-6 pt-[120px] pb-[60px]">
+        <div className="w-full max-w-[480px]">
+          <div className="text-center mb-10">
+            <h1 className="text-[32px] font-light tracking-tight mb-3">How can we help?</h1>
+            <p className="text-[14px] font-light text-white/40 max-w-[320px] mx-auto">
+              Have a bug to report or feedback to share? We'd love to hear from you.
+            </p>
           </div>
-          <h1 className="font-syne text-3xl font-bold tracking-tight text-glow">How can we help?</h1>
-          <p className="text-[#6b7280] text-[15px] max-w-[360px]">
-            Have a bug to report or feedback to share? We'd love to hear from you.
-          </p>
-        </div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-[#111111] border border-[#1a1a1a] rounded-[24px] p-8 shadow-2xl relative overflow-hidden"
-        >
-          {!submitted ? (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-1.5">
-                <label className="text-[12px] font-medium text-[#6b7280] ml-1">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4b5563]" />
-                  <input 
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+          <motion.div 
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="rounded-[12px] border border-white/[0.08] bg-[#090909] p-8"
+          >
+            {!submitted ? (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-medium text-white/40 ml-1">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20" />
+                    <input 
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="name@example.com"
+                      className="w-full bg-transparent border border-white/[0.08] rounded-[8px] pl-11 pr-4 py-2.5 text-[14px] focus:border-blue-500 focus:outline-none transition-colors placeholder:text-white/10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-medium text-white/40 ml-1">Subject</label>
+                  <div className="relative">
+                    <MessageSquare className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20" />
+                    <input 
+                      type="text"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      required
+                      placeholder="What is this about?"
+                      className="w-full bg-transparent border border-white/[0.08] rounded-[8px] pl-11 pr-4 py-2.5 text-[14px] focus:border-blue-500 focus:outline-none transition-colors placeholder:text-white/10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-medium text-white/40 ml-1">Your Message</label>
+                  <textarea 
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
                     required
-                    placeholder="name@example.com"
-                    className="w-full bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl pl-11 pr-4 py-3 text-[14px] focus:border-accent/40 focus:ring-1 focus:ring-accent/10 outline-none transition-all placeholder:text-[#333333]"
+                    rows={4}
+                    placeholder="Tell us what's on your mind..."
+                    className="w-full bg-transparent border border-white/[0.08] rounded-[8px] px-4 py-2.5 text-[14px] focus:border-blue-500 focus:outline-none transition-colors placeholder:text-white/10 resize-none font-light"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[12px] font-medium text-[#6b7280] ml-1">Subject</label>
-                <div className="relative">
-                  <MessageSquare className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4b5563]" />
-                  <input 
-                    type="text"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    required
-                    placeholder="Subject of your report"
-                    className="w-full bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl pl-11 pr-4 py-3 text-[14px] focus:border-accent/40 focus:ring-1 focus:ring-accent/10 outline-none transition-all placeholder:text-[#333333]"
-                  />
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-blue-600 text-white h-11 rounded-[8px] font-medium flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50 mt-2"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      Send Message
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              <motion.div 
+                initial={{ scale: 0.98, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="py-12 flex flex-col items-center text-center space-y-4"
+              >
+                <div className="h-14 w-14 bg-white/[0.03] rounded-full flex items-center justify-center border border-white/[0.08] mb-2">
+                  <BadgeCheck className="h-7 w-7 text-blue-500" />
                 </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[12px] font-medium text-[#6b7280] ml-1">Your Message</label>
-                <textarea 
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  required
-                  rows={4}
-                  placeholder="Tell us what's on your mind..."
-                  className="w-full bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl px-4 py-3 text-[14px] focus:border-accent/40 focus:ring-1 focus:ring-accent/10 outline-none transition-all placeholder:text-[#333333] resize-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-[#f9fafb] text-[#0d0d0d] h-12 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-white transition-all disabled:opacity-50 mt-2"
-              >
-                {isSubmitting ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <>
-                    <Send className="h-4 w-4" />
-                    Send Message
-                  </>
-                )}
-              </button>
-            </form>
-          ) : (
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="py-12 flex flex-col items-center text-center space-y-4"
-            >
-              <div className="h-16 w-16 bg-green-500/10 rounded-full flex items-center justify-center border border-green-500/20 mb-2">
-                <BadgeCheck className="h-8 w-8 text-green-500" />
-              </div>
-              <h2 className="text-xl font-bold">Message Received</h2>
-              <p className="text-[#6b7280] text-sm">
-                Thank you for your feedback! Our team will review your report and get back to you if necessary.
-              </p>
-              <button 
-                onClick={() => setSubmitted(false)}
-                className="text-accent text-sm font-medium hover:underline pt-4"
-              >
-                Send another message
-              </button>
-            </motion.div>
-          )}
-
-          {/* Decorative Corner Asset */}
-          <div className="absolute -bottom-6 -right-6 h-24 w-24 bg-accent/5 rounded-full blur-2xl" />
-        </motion.div>
-
-        <div className="flex justify-center gap-8 text-[12px] text-[#2a2a2a] font-medium pt-4 uppercase tracking-widest">
-            <div className="flex items-center gap-2">
-                <div className="h-1 w-1 bg-[#2a2a2a] rounded-full" />
-                Fast Support
-            </div>
-            <div className="flex items-center gap-2">
-                <div className="h-1 w-1 bg-[#2a2a2a] rounded-full" />
-                Community Driven
-            </div>
+                <h2 className="text-[20px] font-light">Message Received</h2>
+                <p className="text-white/40 text-[14px] font-light max-w-[280px]">
+                  Thank you for your feedback! Our team will review your report shortly.
+                </p>
+                <button 
+                  onClick={() => setSubmitted(false)}
+                  className="text-blue-500 text-[13px] font-medium hover:text-blue-400 transition-colors pt-4"
+                >
+                  Send another message
+                </button>
+              </motion.div>
+            )}
+          </motion.div>
         </div>
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
