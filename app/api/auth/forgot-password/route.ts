@@ -14,10 +14,10 @@ export async function POST(req: Request) {
 
     await dbConnect();
 
-    // Find user by email. If not found, still return 200 (don't leak existence)
+    // Find user by email. If not found, return an error
     const user = await User.findOne({ email });
     if (!user) {
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ error: 'No account found with this email address' }, { status: 404 });
     }
 
     // Generate 6-digit OTP
