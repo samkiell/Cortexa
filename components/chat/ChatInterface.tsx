@@ -186,12 +186,23 @@ export default function ChatInterface({
             messages: [lastUserMsg]
           }),
         });
-        if (createRes.ok) {
-          const conv = await createRes.json();
-          currentConvId = conv._id;
-          setConversationId(currentConvId);
-          window.history.replaceState(null, '', `/chat/${currentConvId}`);
+        
+        if (!createRes.ok) {
+          const errorData = await createRes.json();
+          if (errorData.error === 'limit_reached') {
+            toast.error(errorData.message, {
+              description: errorData.suggestion,
+              duration: 5000,
+            });
+            throw new Error('limit_reached');
+          }
+          throw new Error('Failed to initialize conversation');
         }
+        
+        const conv = await createRes.json();
+        currentConvId = conv._id;
+        setConversationId(currentConvId);
+        window.history.replaceState(null, '', `/chat/${currentConvId}`);
       }
 
       const response = await fetch('/api/chat', {
@@ -206,20 +217,28 @@ export default function ChatInterface({
       });
 
       if (!response.ok) {
-        const errorData = await response.text();
-        // If the error is an HTML page (standard Next.js error), show a generic message
-        if (errorData.includes('<!DOCTYPE html>') || errorData.includes('<html')) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (e) {
           throw new Error('A server error occurred. Please try again later.');
         }
-        
-        try {
-          const parsed = JSON.parse(errorData);
-          const msg = parsed.error?.message || parsed.error || parsed.message || 'An unexpected server error occurred';
-          throw new Error(msg);
-        } catch (e: any) {
-          if (e.message && !e.message.includes('Unexpected token')) throw e;
-          throw new Error(errorData || 'Failed to get response from server');
+
+        if (response.status === 429 && errorData.resetAt) {
+          const timeStr = new Date(errorData.resetAt).toLocaleTimeString([], { 
+            hour: 'numeric', 
+            minute: '2-digit' 
+          });
+          toast.error("Message limit reached", {
+            description: `You're out of messages until ${timeStr}.`,
+            duration: 6000,
+          });
+          throw new Error('rate_limit_reached');
         }
+
+        const msg = errorData.error?.message || errorData.error || errorData.message || 'An unexpected server error occurred';
+        throw new Error(msg);
       }
 
       const reader = response.body?.getReader();
@@ -297,7 +316,15 @@ export default function ChatInterface({
         return executeChat(currentMessages, convId, imageUrl, searchEnabled, retryCount + 1);
       }
 
-      // Professional error handling: don't show full HTML or object logs
+      // Professional error handling
+      if (error.message === 'limit_reached' || error.message === 'rate_limit_reached') {
+        // Remove the last user message if it's a new conversation that failed to start
+        if (!convId) {
+          setMessages(prev => prev.slice(0, -1));
+        }
+        return;
+      }
+
       const msg = typeof error === 'string' ? error : (error.message || 'An unexpected error occurred');
       toast.error(msg);
       console.error('Chat error:', error);

@@ -52,7 +52,8 @@ export async function POST(req: Request) {
     if (userRole !== 'admin') {
       const now = new Date();
       const hourStart = startOfHour(now);
-      
+      const resetAt = new Date(hourStart.getTime() + 60 * 60 * 1000);
+
       let limitDoc = await RateLimit.findOne({ userId });
       if (!limitDoc || limitDoc.windowStart < hourStart) {
         // Reset or new window
@@ -62,7 +63,11 @@ export async function POST(req: Request) {
           { upsert: true, returnDocument: 'after' }
         );
       } else if (limitDoc.count >= 30) {
-        return new Response('Rate limit exceeded. Max 30 messages per hour.', { status: 429 });
+        return NextResponse.json({ 
+          error: 'Message limit reached',
+          message: 'You have reached the limit of 30 messages per hour.',
+          resetAt: resetAt.toISOString()
+        }, { status: 429 });
       } else {
         limitDoc.count += 1;
         await limitDoc.save();

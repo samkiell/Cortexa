@@ -40,7 +40,11 @@ export async function POST(req: Request) {
     if (!isAdmin) {
       const currentCount = await Conversation.countDocuments({ userId: (session.user as any).id });
       if (currentCount >= maxConvs) {
-        return NextResponse.json({ error: `You have reached the maximum of ${maxConvs} conversations.` }, { status: 403 });
+        return NextResponse.json({ 
+          error: 'limit_reached', 
+          message: `You've reached the ${maxConvs} conversation limit.`,
+          suggestion: 'Delete an old chat to start a new one.'
+        }, { status: 403 });
       }
     }
 
