@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function ModelVisibilityPage() {
   const [visibleModels, setVisibleModels] = useState<string[]>([]);
   const [allModels, setAllModels] = useState<any[]>([]);
+  const [modelPricing, setModelPricing] = useState<Record<string, { pricePer1kTokens: number }>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isFetchingLibrary, setIsFetchingLibrary] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -38,6 +39,7 @@ export default function ModelVisibilityPage() {
       if (settingsRes.ok) {
         const settings = await settingsRes.json();
         setVisibleModels(settings.visibleModels || []);
+        setModelPricing(settings.modelPricing || {});
       }
 
       // Fetch all models from library
@@ -85,6 +87,32 @@ export default function ModelVisibilityPage() {
       }
     } catch (err) {
       toast.error('Error updating visibility');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const updatePricing = async (modelId: string, price: number) => {
+    const nextPricing = {
+      ...modelPricing,
+      [modelId]: { pricePer1kTokens: price }
+    };
+
+    setIsUpdating(true);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modelPricing: nextPricing }),
+      });
+      if (res.ok) {
+        setModelPricing(nextPricing);
+        toast.success('Price updated');
+      } else {
+        toast.error('Failed to update price');
+      }
+    } catch (err) {
+      toast.error('Error updating price');
     } finally {
       setIsUpdating(false);
     }
@@ -176,7 +204,25 @@ export default function ModelVisibilityPage() {
                   </div>
                 </div>
                 
-                <p className="text-[12px] text-[#9ca3af] italic leading-relaxed border-l-2 border-accent/20 pl-3">"{model.description}"</p>
+                <p className="text-[12px] text-[#9ca3af] italic leading-relaxed border-l-2 border-accent/20 pl-3 mb-6">"{model.description}"</p>
+                
+                <div className="pt-4 border-t border-[#1a1a1a] space-y-2">
+                  <label className="text-[10px] font-bold text-[#4b5563] uppercase tracking-wider">Price per 1k tokens (USD)</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="number" 
+                      step="0.0001"
+                      placeholder="0.0000"
+                      value={modelPricing[model.id]?.pricePer1kTokens || ''}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        setModelPricing(prev => ({ ...prev, [model.id]: { pricePer1kTokens: val } }));
+                      }}
+                      onBlur={(e) => updatePricing(model.id, parseFloat(e.target.value) || 0)}
+                      className="flex-1 bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg px-3 py-1.5 text-xs text-[#f9fafb] outline-none focus:border-accent/40"
+                    />
+                  </div>
+                </div>
               </motion.div>
             );
           })}

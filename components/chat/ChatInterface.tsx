@@ -38,6 +38,8 @@ export default function ChatInterface({
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [image, setImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [userScrolledUp, setUserScrolledUp] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Sync searchEnabled with localStorage on mount
   useEffect(() => {
@@ -63,6 +65,15 @@ export default function ChatInterface({
   const streamingBufferRef = useRef('');
   const animationFrameRef = useRef<number | null>(null);
   const router = useRouter();
+
+  const handleStop = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsLoading(false);
+      toast.info('Generation stopped');
+    }
+  }, []);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -138,17 +149,30 @@ export default function ChatInterface({
   useEffect(() => {
     // Only scroll automatically on mount/reset if there's history
     if (messages.length > 0 && messages[messages.length-1].role === 'user' && !isLoading) {
+       setUserScrolledUp(false); // Reset on new user message
        scrollToBottom('smooth');
     }
-  }, [messages.length, scrollToBottom]); 
+  }, [messages.length, scrollToBottom, isLoading]); 
 
   const handleScroll = useCallback(() => {
     if (scrollAreaRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+      
+      // If user scrolls up significantly during loading, mark it
+      if (isLoading && !isAtBottom) {
+        setUserScrolledUp(true);
+      }
+      
+      // If user manually scrolls back to bottom, reset
+      if (isAtBottom) {
+        setUserScrolledUp(false);
+      }
+
       // Show button if we are more than 150px from the bottom
       setShowScrollButton(scrollHeight - scrollTop - clientHeight > 150);
     }
-  }, []);
+  }, [isLoading]);
 
   const playCompletionSound = useCallback(() => {
     const soundsEnabled = localStorage.getItem('cortexaSoundsEnabled');
@@ -200,8 +224,13 @@ export default function ChatInterface({
     retryCount = 0
   ) => {
     setIsLoading(true);
+    abortControllerRef.current = new AbortController();
+    
     // Explicitly scroll to user message
-    setTimeout(() => scrollToBottom('smooth'), 50);
+    setTimeout(() => {
+      setUserScrolledUp(false);
+      scrollToBottom('smooth');
+    }, 50);
     
     try {
       let currentConvId = convId;
@@ -246,6 +275,7 @@ export default function ChatInterface({
           imageBase64: imageUrl || lastUserMsg.imageUrl,
           searchEnabled
         }),
+        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
@@ -322,6 +352,7 @@ export default function ChatInterface({
 
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       flush();
+      if (!userScrolledUp) scrollToBottom('smooth');
       playCompletionSound();
 
       // Final save to DB
@@ -337,10 +368,15 @@ export default function ChatInterface({
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: [...currentMessages, lastMsg] }),
+          signal: abortControllerRef.current?.signal,
         });
       }
 
     } catch (error: any) {
+      if (error.name === 'AbortError') {
+         console.log('Fetch aborted');
+         return;
+      }
       // Automatic retry for capacity issues
       const isCapacityError = error.message?.toLowerCase().includes('capacity') || error.message?.toLowerCase().includes('overloaded');
       if (isCapacityError && retryCount < 1) {
@@ -363,6 +399,7 @@ export default function ChatInterface({
       console.error('Chat error:', error);
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -619,6 +656,7 @@ export default function ChatInterface({
 
       <MessageInput 
         onSend={handleSend} 
+        onStop={handleStop}
         isLoading={isLoading}
         isVisionCapable={isVisionCapable}
         supportsTools={supportsTools}

@@ -31,6 +31,8 @@ export async function GET() {
       hourlyConversationLimit: settings.hourlyConversationLimit || 10,
       featherlessApiKey: maskedKey,
       visibleModels: settings.visibleModels,
+      globalSystemPrompt: settings.globalSystemPrompt || '',
+      modelPricing: settings.modelPricing || {},
     });
   } catch (error: any) {
     console.error('Settings GET error:', error);
@@ -63,6 +65,14 @@ export async function PUT(req: Request) {
 
     if (data.visibleModels !== undefined) {
       update.visibleModels = data.visibleModels;
+    }
+
+    if (data.globalSystemPrompt !== undefined) {
+      update.globalSystemPrompt = data.globalSystemPrompt;
+    }
+
+    if (data.modelPricing !== undefined) {
+      update.modelPricing = data.modelPricing;
     }
 
     const updatedSettings = await Settings.findOneAndUpdate(

@@ -13,6 +13,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface MessageInputProps {
   onSend: (message: string, image?: string, searchEnabled?: boolean) => void;
+  onStop: () => void;
   isLoading: boolean;
   isVisionCapable: boolean;
   supportsTools?: boolean;
@@ -24,6 +25,7 @@ interface MessageInputProps {
 
 export default function MessageInput({ 
   onSend, 
+  onStop,
   isLoading, 
   isVisionCapable, 
   supportsTools = false,
@@ -193,18 +195,31 @@ export default function MessageInput({
                 )}
               </div>
 
-              <motion.button
-                whileTap={{ scale: 0.94 }}
-                onClick={handleSend}
-                disabled={!canSend}
-                className={`flex items-center justify-center h-8 w-8 rounded-full transition-all duration-150 ${
-                  canSend 
-                    ? 'bg-[#ffffff] text-[#0d0d0d]' 
-                    : 'bg-[#1e1e1e] text-[#4b5563] cursor-not-allowed'
-                }`}
-              >
-                <ArrowUp className="h-4 w-4" />
-              </motion.button>
+              {isLoading ? (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  whileTap={{ scale: 0.94 }}
+                  onClick={onStop}
+                  className="flex items-center justify-center h-8 w-8 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 transition-all duration-150 shadow-[0_0_15px_rgba(239,68,68,0.2)]"
+                  title="Stop generation"
+                >
+                  <div className="h-2.5 w-2.5 bg-current rounded-[2px]" />
+                </motion.button>
+              ) : (
+                <motion.button
+                  whileTap={{ scale: 0.94 }}
+                  onClick={handleSend}
+                  disabled={!canSend}
+                  className={`flex items-center justify-center h-8 w-8 rounded-full transition-all duration-150 ${
+                    canSend 
+                      ? 'bg-[#ffffff] text-[#0d0d0d]' 
+                      : 'bg-[#1e1e1e] text-[#4b5563] cursor-not-allowed'
+                  }`}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </motion.button>
+              )}
             </div>
           </div>
           <p className="mt-2 text-center text-[11px] text-[#4b5563]">

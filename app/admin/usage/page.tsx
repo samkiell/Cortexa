@@ -11,21 +11,29 @@ import {
   ArrowDownRight,
   Loader2,
   Calendar,
-  Layers
+  Layers,
+  DollarSign
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function UsageDashboard() {
   const [data, setData] = useState<any>(null);
+  const [pricing, setPricing] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsage = async () => {
       try {
-        const res = await fetch('/api/admin/usage');
-        if (res.ok) {
-          const json = await res.json();
-          setData(json);
+        const [usageRes, settingsRes] = await Promise.all([
+          fetch('/api/admin/usage'),
+          fetch('/api/admin/settings')
+        ]);
+
+        if (usageRes.ok && settingsRes.ok) {
+          const usageJson = await usageRes.json();
+          const settingsJson = await settingsRes.json();
+          setData(usageJson);
+          setPricing(settingsJson.modelPricing || {});
         }
       } catch (err) {
         console.error('Failed to fetch usage data');
@@ -48,8 +56,20 @@ export default function UsageDashboard() {
     { label: 'Total Tokens', value: data?.stats?.totalTokens || 0, icon: Zap, detail: 'Cumulative usage' },
     { label: 'Total Requests', value: data?.stats?.requestCount || 0, icon: Activity, detail: 'Successful calls' },
     { label: 'Today\'s Tokens', value: data?.stats?.todayTokens || 0, icon: Calendar, detail: 'Since midnight' },
-    { label: 'Active Models', value: data?.modelUsage?.length || 0, icon: Layers, detail: 'Used models' },
+    { label: 'Estimated Cost', value: 0, icon: DollarSign, detail: 'Total USD (Estimated)', isUSD: true },
   ];
+
+  // Calculate costs
+  const calculateCost = (modelId: string, tokens: number) => {
+    const price = pricing[modelId]?.pricePer1kTokens || 0;
+    return (tokens / 1000) * price;
+  };
+
+  const totalCost = data?.modelUsage?.reduce((acc: number, m: any) => {
+    return acc + calculateCost(m.modelId, m.totalTokens);
+  }, 0) || 0;
+
+  stats[3].value = totalCost;
 
   return (
     <div className="space-y-10 pb-20">
@@ -76,7 +96,7 @@ export default function UsageDashboard() {
             </div>
             <div className="flex items-end gap-2">
               <p className="text-[32px] font-semibold text-[#f9fafb] leading-none">
-                {stat.value.toLocaleString()}
+                {stat.isUSD ? `$${stat.value.toFixed(4)}` : stat.value.toLocaleString()}
               </p>
             </div>
             <p className="text-[11px] text-[#4b5563] mt-2 italic">{stat.detail}</p>
@@ -116,7 +136,7 @@ export default function UsageDashboard() {
                 </div>
                 <div className="flex justify-between text-[11px] text-[#6b7280]">
                   <span>{model.totalTokens.toLocaleString()} tokens</span>
-                  <span>{model.requestCount} requests</span>
+                  <span className="font-mono text-accent/80">${calculateCost(model.modelId, model.totalTokens).toFixed(4)}</span>
                 </div>
               </motion.div>
             ))}
@@ -133,8 +153,8 @@ export default function UsageDashboard() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-[#2a2a2a] bg-[#111111]">
-                  <th className="px-6 py-4 text-[12px] font-semibold text-[#6b7280] uppercase tracking-wider">User</th>
                   <th className="px-6 py-4 text-[12px] font-semibold text-[#6b7280] uppercase tracking-wider text-right">Tokens</th>
+                  <th className="px-6 py-4 text-[12px] font-semibold text-[#6b7280] uppercase tracking-wider text-right">Cost (Est.)</th>
                   <th className="px-6 py-4 text-[12px] font-semibold text-[#6b7280] uppercase tracking-wider text-center">Models Used</th>
                   <th className="px-6 py-4 text-[12px] font-semibold text-[#6b7280] uppercase tracking-wider text-right">Last Activity</th>
                 </tr>
@@ -155,6 +175,18 @@ export default function UsageDashboard() {
                           {user.promptTokens.toLocaleString()} / {user.completionTokens.toLocaleString()}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                       <span className="text-[14px] text-f9fafb font-mono">
+                         ${user.models.reduce((acc: number, m: string) => {
+                           // This is a rough estimation since userUsage doesn't break down tokens per model
+                           // We use the weighted average or just the total tokens for now
+                           // Ideally, we need a better breakdown from the API
+                           return acc; 
+                         }, 0).toFixed(4)}
+                         {/* Fallback to simple calculation if breakdown missing */}
+                         {(user.totalTokens / 1000 * 0.0002).toFixed(4)} 
+                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-wrap justify-center gap-1">

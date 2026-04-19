@@ -30,6 +30,17 @@ const SettingsSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    globalSystemPrompt: {
+      type: String,
+      default: '',
+    },
+    modelPricing: {
+      type: Map,
+      of: new Schema({
+        pricePer1kTokens: { type: Number, default: 0 },
+      }, { _id: false }),
+      default: {},
+    },
   },
   { timestamps: true }
 );

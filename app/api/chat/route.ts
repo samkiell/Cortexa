@@ -106,7 +106,22 @@ export async function POST(req: Request) {
     const supportsTools = modelInfo.supportsTools || false;
     let canSearch = searchEnabled && supportsTools;
 
-    const formattedMessages = messages.map((m: any, idx: number) => {
+    const globalPrompt = settings?.globalSystemPrompt;
+    let finalMessages = [...messages];
+    
+    if (globalPrompt) {
+      // Check if there's already a system prompt
+      const hasSystemPrompt = messages.some((m: any) => m.role === 'system');
+      if (hasSystemPrompt) {
+        finalMessages = messages.map((m: any) => 
+          m.role === 'system' ? { ...m, content: `${globalPrompt}\n\n${m.content}` } : m
+        );
+      } else {
+        finalMessages = [{ role: 'system', content: globalPrompt }, ...messages];
+      }
+    }
+
+    const formattedMessages = finalMessages.map((m: any, idx: number) => {
       if (idx === messages.length - 1 && imageBase64 && isVisionModel) {
         let imageUrl = imageBase64;
         if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {

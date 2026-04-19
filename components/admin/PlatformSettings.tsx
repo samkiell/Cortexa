@@ -26,6 +26,7 @@ export default function PlatformSettings() {
     featherlessApiKey: '',
     hourlyMessageLimit: 30,
     hourlyConversationLimit: 10,
+    globalSystemPrompt: '',
   });
   
   const [showKey, setShowKey] = useState(false);
@@ -125,6 +126,17 @@ export default function PlatformSettings() {
                 </button>
               </div>
               <p className="text-[11px] text-[#6b7280]">Key is masked for security. Overwrite to update.</p>
+            </div>
+            <div className="space-y-1.5 pt-2">
+              <label className="text-[12px] text-[#6b7280] font-semibold uppercase tracking-wider">Global System Prompt</label>
+              <textarea 
+                name="globalSystemPrompt"
+                value={data.globalSystemPrompt}
+                onChange={(e) => setData(prev => ({ ...prev, globalSystemPrompt: e.target.value }))}
+                className="w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-[#f9fafb] focus:border-accent/50 outline-none transition-all min-h-[120px] resize-y scrollbar-none"
+                placeholder="e.g. You are Cortexa, a highly advanced assistant..."
+              />
+              <p className="text-[11px] text-[#6b7280]">This prompt is prepended to all AI requests across the platform.</p>
             </div>
           </div>
         </section>

@@ -15,7 +15,8 @@ import {
   X,
   SquarePen,
   PanelLeftClose,
-  LogOut
+  LogOut,
+  Search
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { isToday, isWithinInterval, subDays, startOfDay } from 'date-fns';
@@ -43,6 +44,7 @@ export default function ConversationSidebar() {
   // Modal State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [targetDeleteId, setTargetDeleteId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -86,16 +88,14 @@ export default function ConversationSidebar() {
   }, [session, pathname]);
 
   const groupedConversations = useMemo(() => {
-    const groups: { [key: string]: Conversation[] } = {
-      Today: [],
-      'Previous 7 Days': [],
-      Older: []
-    };
-
     const now = new Date();
     const sevenDaysAgo = subDays(startOfDay(now), 7);
 
-    conversations.forEach(conv => {
+    const filtered = conversations.filter(conv => 
+      !searchQuery || (conv.title && conv.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+    filtered.forEach(conv => {
       const dateStr = conv.updatedAt || conv.createdAt;
       if (!dateStr) return; // Skip if no date
       const date = new Date(dateStr);
@@ -111,7 +111,7 @@ export default function ConversationSidebar() {
     });
 
     return groups;
-  }, [conversations]);
+  }, [conversations, searchQuery]);
 
   const handleDeleteClick = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -196,6 +196,28 @@ export default function ConversationSidebar() {
             <Plus className="h-4 w-4" />
             <span className="font-bold">New chat</span>
           </Link>
+        </div>
+
+        {/* Search Bar */}
+        <div className="px-3 mb-2">
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#4b5563] group-focus-within:text-accent transition-colors" />
+            <input 
+              type="text"
+              placeholder="Search chats..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#161616] border border-[#2a2a2a] rounded-lg pl-9 pr-8 py-2 text-[12px] text-[#f9fafb] outline-none focus:border-accent/40 transition-all placeholder:text-[#333]"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#4b5563] hover:text-[#f9fafb] transition-colors"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Conversation List */}
