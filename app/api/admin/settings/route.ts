@@ -26,7 +26,6 @@ export async function GET() {
     return NextResponse.json({
       siteName: settings.siteName,
       allowRegistration: settings.allowRegistration,
-      maxConversations: settings.maxConversations,
       maintenanceMode: settings.maintenanceMode,
       hourlyMessageLimit: settings.hourlyMessageLimit || 30,
       hourlyConversationLimit: settings.hourlyConversationLimit || 10,
@@ -52,7 +51,6 @@ export async function PUT(req: Request) {
     const update: any = {
       siteName: data.siteName,
       allowRegistration: data.allowRegistration,
-      maxConversations: data.maxConversations,
       maintenanceMode: data.maintenanceMode,
       hourlyMessageLimit: data.hourlyMessageLimit,
       hourlyConversationLimit: data.hourlyConversationLimit,

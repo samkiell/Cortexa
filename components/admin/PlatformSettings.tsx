@@ -22,7 +22,6 @@ export default function PlatformSettings() {
   const [data, setData] = useState({
     siteName: 'Cortexa',
     allowRegistration: true,
-    maxConversations: 10,
     maintenanceMode: false,
     featherlessApiKey: '',
     hourlyMessageLimit: 30,
@@ -201,19 +200,6 @@ export default function PlatformSettings() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[12px] text-[#6b7280] font-semibold uppercase tracking-wider">Total Stored Chats Limit</label>
-                <div className="flex items-center gap-4">
-                  <input 
-                    type="number"
-                    name="maxConversations"
-                    value={data.maxConversations}
-                    onChange={handleChange}
-                    className="w-24 bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-[#f9fafb] focus:border-accent/50 outline-none transition-all"
-                  />
-                  <p className="text-[12px] text-[#6b7280]">Maximum total conversations a user can keep (currently used for logic reference).</p>
-                </div>
-              </div>
             </div>
           </div>
         </section>

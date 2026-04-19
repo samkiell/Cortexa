@@ -18,10 +18,6 @@ const SettingsSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    maxConversations: {
-      type: Number,
-      default: 10,
-    },
     hourlyMessageLimit: {
       type: Number,
       default: 30,
