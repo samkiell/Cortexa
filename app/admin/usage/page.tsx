@@ -177,16 +177,9 @@ export default function UsageDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                       <span className="text-[14px] text-f9fafb font-mono">
-                         ${user.models.reduce((acc: number, m: string) => {
-                           // This is a rough estimation since userUsage doesn't break down tokens per model
-                           // We use the weighted average or just the total tokens for now
-                           // Ideally, we need a better breakdown from the API
-                           return acc; 
-                         }, 0).toFixed(4)}
-                         {/* Fallback to simple calculation if breakdown missing */}
-                         {(user.totalTokens / 1000 * 0.0002).toFixed(4)} 
-                       </span>
+                      <span className="text-[14px] text-[#f9fafb] font-mono">
+                        ${(user.totalTokens / 1000 * 0.0002).toFixed(4)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-wrap justify-center gap-1">

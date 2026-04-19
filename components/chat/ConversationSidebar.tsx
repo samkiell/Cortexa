@@ -91,6 +91,12 @@ export default function ConversationSidebar() {
     const now = new Date();
     const sevenDaysAgo = subDays(startOfDay(now), 7);
 
+    const groups: { [key: string]: Conversation[] } = {
+      Today: [],
+      'Previous 7 Days': [],
+      Older: []
+    };
+
     const filtered = conversations.filter(conv => 
       !searchQuery || (conv.title && conv.title.toLowerCase().includes(searchQuery.toLowerCase()))
     );
