@@ -10,6 +10,7 @@ import { webSearch } from '@/lib/search';
 import { CURATED_MODELS } from '@/lib/featherless';
 import { startOfHour } from 'date-fns';
 import { decrypt } from '@/lib/crypto';
+import Usage from '@/lib/models/Usage';
 
 const searchTool = {
   type: 'function',
@@ -119,6 +120,13 @@ export async function POST(req: Request) {
       return m;
     });
 
+    // Helper for token estimation
+    const estimateTokens = (text: string) => Math.ceil(text.length / 4);
+    const promptText = formattedMessages.map((m: any) => 
+      typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
+    ).join('');
+    const promptTokens = estimateTokens(promptText);
+
     let toolCalls: any[] = [];
     let initialResponse: any = null;
 
@@ -184,12 +192,24 @@ export async function POST(req: Request) {
               // Signal sources before tokens
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'sources', sources: searchResults.results })}\n\n`));
 
+              let completionText = '';
               for await (const chunk of secondResponse) {
                 const content = chunk.choices[0]?.delta?.content || '';
                 if (content) {
+                  completionText += content;
                   controller.enqueue(encoder.encode(content));
                 }
               }
+
+              // Save Usage
+              const completionTokens = estimateTokens(completionText);
+              await Usage.create({
+                userId,
+                modelId,
+                promptTokens: promptTokens + estimateTokens(JSON.stringify(searchResults)),
+                completionTokens,
+                totalTokens: promptTokens + estimateTokens(JSON.stringify(searchResults)) + completionTokens
+              });
             } catch (err: any) {
               console.error('Streaming error in tool loop:', err);
               controller.error(err);
@@ -221,12 +241,24 @@ export async function POST(req: Request) {
       const stream = new ReadableStream({
         async start(controller) {
           try {
+            let completionText = '';
             for await (const chunk of response) {
               const content = chunk.choices[0]?.delta?.content || '';
               if (content) {
+                completionText += content;
                 controller.enqueue(encoder.encode(content));
               }
             }
+
+            // Save Usage
+            const completionTokens = estimateTokens(completionText);
+            await Usage.create({
+              userId,
+              modelId,
+              promptTokens,
+              completionTokens,
+              totalTokens: promptTokens + completionTokens
+            });
           } catch (err: any) {
             console.error('Streaming error in route:', err);
             controller.error(err);

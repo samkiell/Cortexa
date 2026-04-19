@@ -43,6 +43,13 @@ export default async function AdminLayout({
             Dashboard
           </Link>
           <Link 
+            href="/admin/usage" 
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-base hover:text-white transition-all transition-colors"
+          >
+            <BarChart3 className="h-4 w-4" />
+            Token Usage
+          </Link>
+          <Link 
             href="/admin/users" 
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-base hover:text-white transition-all transition-colors"
           >
