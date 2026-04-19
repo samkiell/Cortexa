@@ -392,7 +392,7 @@ export default function ChatInterface({
       const truncatedMessages = messages.slice(0, index + 1);
       truncatedMessages[index] = { ...messageToEdit, content: newContent };
       setMessages(truncatedMessages);
-      executeChat(truncatedMessages, conversationId, undefined, searchEnabled);
+      executeChat(truncatedMessages, conversationId, messageToEdit.imageUrl, searchEnabled);
     } else {
       // Just update assistant message
       const updatedMessages = [...messages];

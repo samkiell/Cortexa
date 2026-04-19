@@ -59,7 +59,7 @@ export default function RootLayout({
             </SidebarProvider>
           </ModelProvider>
         </SessionProviderWrapper>
-        <Toaster position="bottom-right" theme="dark" closeButton />
+        <Toaster position="bottom-right" theme="dark" />
       </body>
     </html>
   );

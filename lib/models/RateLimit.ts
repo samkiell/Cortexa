@@ -12,6 +12,12 @@ const RateLimitSchema = new Schema(
       type: Number,
       default: 0,
     },
+    type: {
+      type: String,
+      enum: ['chat', 'conversation'],
+      default: 'chat',
+      index: true,
+    },
     windowStart: {
       type: Date,
       default: Date.now,

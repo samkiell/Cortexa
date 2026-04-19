@@ -27,7 +27,9 @@ interface MessageBubbleProps {
 const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerate, onDelete, onEdit }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showMobileActions, setShowMobileActions] = useState(false);
   const [editValue, setEditValue] = useState(message.content);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const editRef = useRef<HTMLTextAreaElement>(null);
   const isAssistant = message.role === 'assistant';
 
@@ -53,12 +55,30 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
     setIsEditing(false);
   };
 
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => {
+      setShowMobileActions(true);
+      if ('vibrate' in navigator) navigator.vibrate(50);
+      
+      // Auto-hide after 5 seconds if not interacting
+      setTimeout(() => setShowMobileActions(false), 5000);
+    }, 600);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+  };
+
   return (
-    <motion.div 
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18 }}
-      className={`group flex w-full flex-col ${isAssistant ? 'items-start' : 'items-end'} mb-6 relative`}
+      className={`group flex w-full flex-col ${isAssistant ? 'items-start' : 'items-end'} mb-6 relative select-none touch-none-user-select`}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onClick={() => showMobileActions && setShowMobileActions(false)}
     >
       <div className={`relative flex flex-col gap-2 ${isAssistant ? 'w-full' : 'max-w-[85%] items-end'}`}>
         
@@ -95,8 +115,8 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
               </div>
             ) : (
               <div className="relative group/userbubble">
-                {/* User Hover Actions (to the left) */}
-                <div className="absolute left-0 -translate-x-full top-0 h-full pr-2 flex items-start pt-1 opacity-0 group-hover/userbubble:opacity-100 transition-opacity">
+                {/* User Hover/Long-press Actions (to the left) */}
+                <div className={`absolute left-0 -translate-x-full top-0 h-full pr-2 flex items-start pt-1 transition-opacity ${showMobileActions ? 'opacity-100 z-50' : 'opacity-0 group-hover/userbubble:opacity-100'}`}>
                   <div className="flex items-center gap-1 bg-[#0d0d0d] border border-[#1f1f1f] rounded-lg p-0.5 shadow-xl">
                     <button 
                       onClick={() => setIsEditing(true)}
@@ -299,8 +319,8 @@ const MessageBubble = memo(function MessageBubble({ message, isLast, onRegenerat
             {!isEditing && message.content && (
               <motion.div 
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                animate={{ opacity: showMobileActions ? 1 : 0 }}
+                className={`flex items-center gap-2 mt-2 transition-opacity duration-150 ${showMobileActions ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
               >
                 <div className="flex items-center gap-1">
                   <button

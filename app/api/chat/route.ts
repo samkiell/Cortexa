@@ -55,11 +55,11 @@ export async function POST(req: Request) {
       const hourStart = startOfHour(now);
       const resetAt = new Date(hourStart.getTime() + 60 * 60 * 1000);
 
-      let limitDoc = await RateLimit.findOne({ userId });
+      let limitDoc = await RateLimit.findOne({ userId, type: 'chat' });
       if (!limitDoc || limitDoc.windowStart < hourStart) {
         // Reset or new window
         limitDoc = await RateLimit.findOneAndUpdate(
-          { userId },
+          { userId, type: 'chat' },
           { count: 1, windowStart: hourStart },
           { upsert: true, returnDocument: 'after' }
         );

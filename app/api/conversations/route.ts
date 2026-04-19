@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Conversation from '@/lib/models/Conversation';
 import Settings from '@/lib/models/Settings';
+import RateLimit from '@/lib/models/RateLimit';
+import { startOfHour } from 'date-fns';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -36,15 +38,30 @@ export async function POST(req: Request) {
 
     // Admin skip check
     const isAdmin = (session.user as any).role === 'admin';
+    const userId = (session.user as any).id;
     
     if (!isAdmin) {
-      const currentCount = await Conversation.countDocuments({ userId: (session.user as any).id });
-      if (currentCount >= maxConvs) {
+      const now = new Date();
+      const hourStart = startOfHour(now);
+      const resetAt = new Date(hourStart.getTime() + 60 * 60 * 1000);
+
+      let limitDoc = await RateLimit.findOne({ userId, type: 'conversation' });
+      if (!limitDoc || limitDoc.windowStart < hourStart) {
+        limitDoc = await RateLimit.findOneAndUpdate(
+          { userId, type: 'conversation' },
+          { count: 1, windowStart: hourStart },
+          { upsert: true, returnDocument: 'after' }
+        );
+      } else if (limitDoc.count >= 10) {
+        const minutesLeft = Math.ceil((resetAt.getTime() - now.getTime()) / 60000);
         return NextResponse.json({ 
           error: 'limit_reached', 
-          message: `You've reached the ${maxConvs} conversation limit.`,
-          suggestion: 'Delete an old chat to start a new one.'
+          message: `You've reached your new chat limit for this hour.`,
+          suggestion: `Please wait ${minutesLeft} minutes to start a new thread or continue an existing one.`
         }, { status: 403 });
+      } else {
+        limitDoc.count += 1;
+        await limitDoc.save();
       }
     }
 
