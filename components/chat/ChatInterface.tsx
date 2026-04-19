@@ -150,6 +150,38 @@ export default function ChatInterface({
     }
   }, []);
 
+  const playCompletionSound = useCallback(() => {
+    const soundsEnabled = localStorage.getItem('cortexaSoundsEnabled');
+    if (soundsEnabled === 'false') return;
+
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      
+      const context = new AudioCtx();
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(880, context.currentTime); // A5
+      oscillator.frequency.exponentialRampToValueAtTime(440, context.currentTime + 0.1); // A4
+
+      gainNode.gain.setValueAtTime(0.05, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.1);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.1);
+      
+      // Close context after playback
+      setTimeout(() => context.close(), 200);
+    } catch (e) {
+      console.error('Audio initialization failed:', e);
+    }
+  }, []);
+
   const updateLastMessage = useCallback((update: Partial<Message>) => {
     setMessages((prev) => {
       const last = prev[prev.length - 1];
@@ -290,6 +322,7 @@ export default function ChatInterface({
 
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       flush();
+      playCompletionSound();
 
       // Final save to DB
       if (currentConvId) {

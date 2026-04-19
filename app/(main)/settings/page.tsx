@@ -45,6 +45,7 @@ export default function SettingsPage() {
   const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
   const [userTickets, setUserTickets] = useState<any[]>([]);
   const [isLoadingTickets, setIsLoadingTickets] = useState(true);
+  const [soundsEnabled, setSoundsEnabled] = useState(true);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,6 +73,12 @@ export default function SettingsPage() {
       }
     };
     fetchProfile();
+
+    // Sound setting
+    const savedSound = localStorage.getItem('cortexaSoundsEnabled');
+    if (savedSound !== null) {
+      setSoundsEnabled(savedSound === 'true');
+    }
   }, [session]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,6 +161,14 @@ export default function SettingsPage() {
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const toggleSounds = () => {
+    const newVal = !soundsEnabled;
+    setSoundsEnabled(newVal);
+    localStorage.setItem('cortexaSoundsEnabled', String(newVal));
+    if (newVal) toast.success('Sounds enabled');
+    else toast.info('Sounds muted');
   };
 
   const handleClearHistory = async () => {
@@ -410,6 +425,23 @@ export default function SettingsPage() {
                         <div className="px-2 py-1 rounded bg-[#1a1a1a] text-[11px] text-[#6b7280] border border-[#2a2a2a]">
                           Changes locked
                         </div>
+                      </div>
+
+                      <div className="p-4 flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <p className="text-[13px] font-medium text-[#d1d5db]">Response Sound</p>
+                          <p className="text-[12px] text-[#6b7280]">Play a soft blip when generation finishes</p>
+                        </div>
+                        <button 
+                          onClick={toggleSounds}
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors outline-none ${soundsEnabled ? 'bg-accent' : 'bg-[#1a1a1a] border border-[#2a2a2a]'}`}
+                        >
+                          <motion.span
+                            animate={{ x: soundsEnabled ? 18 : 2 }}
+                            initial={false}
+                            className="inline-block h-4 w-4 transform rounded-full bg-white shadow-lg"
+                          />
+                        </button>
                       </div>
                     </div>
                   </section>
