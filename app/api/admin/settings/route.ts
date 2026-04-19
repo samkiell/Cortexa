@@ -28,6 +28,8 @@ export async function GET() {
       allowRegistration: settings.allowRegistration,
       maxConversations: settings.maxConversations,
       maintenanceMode: settings.maintenanceMode,
+      hourlyMessageLimit: settings.hourlyMessageLimit || 30,
+      hourlyConversationLimit: settings.hourlyConversationLimit || 10,
       featherlessApiKey: maskedKey,
       visibleModels: settings.visibleModels,
     });
@@ -52,6 +54,8 @@ export async function PUT(req: Request) {
       allowRegistration: data.allowRegistration,
       maxConversations: data.maxConversations,
       maintenanceMode: data.maintenanceMode,
+      hourlyMessageLimit: data.hourlyMessageLimit,
+      hourlyConversationLimit: data.hourlyConversationLimit,
     };
 
     // Only update API key if it's not the masked one

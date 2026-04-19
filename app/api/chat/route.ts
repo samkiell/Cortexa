@@ -55,6 +55,9 @@ export async function POST(req: Request) {
       const hourStart = startOfHour(now);
       const resetAt = new Date(hourStart.getTime() + 60 * 60 * 1000);
 
+      const settings = await Settings.findOne();
+      const msgLimit = settings?.hourlyMessageLimit || 30;
+
       let limitDoc = await RateLimit.findOne({ userId, type: 'chat' });
       if (!limitDoc || limitDoc.windowStart < hourStart) {
         // Reset or new window
@@ -63,10 +66,10 @@ export async function POST(req: Request) {
           { count: 1, windowStart: hourStart },
           { upsert: true, returnDocument: 'after' }
         );
-      } else if (limitDoc.count >= 30) {
+      } else if (limitDoc.count >= msgLimit) {
         return NextResponse.json({ 
           error: 'Message limit reached',
-          message: 'You have reached the limit of 30 messages per hour.',
+          message: `You have reached the limit of ${msgLimit} messages per hour.`,
           resetAt: resetAt.toISOString()
         }, { status: 429 });
       } else {

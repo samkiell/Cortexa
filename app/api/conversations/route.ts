@@ -45,6 +45,9 @@ export async function POST(req: Request) {
       const hourStart = startOfHour(now);
       const resetAt = new Date(hourStart.getTime() + 60 * 60 * 1000);
 
+      const settings = await Settings.findOne();
+      const convLimit = settings?.hourlyConversationLimit || 10;
+
       let limitDoc = await RateLimit.findOne({ userId, type: 'conversation' });
       if (!limitDoc || limitDoc.windowStart < hourStart) {
         limitDoc = await RateLimit.findOneAndUpdate(
@@ -52,7 +55,7 @@ export async function POST(req: Request) {
           { count: 1, windowStart: hourStart },
           { upsert: true, returnDocument: 'after' }
         );
-      } else if (limitDoc.count >= 10) {
+      } else if (limitDoc.count >= convLimit) {
         const minutesLeft = Math.ceil((resetAt.getTime() - now.getTime()) / 60000);
         return NextResponse.json({ 
           error: 'limit_reached', 

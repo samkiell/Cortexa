@@ -22,9 +22,11 @@ export default function PlatformSettings() {
   const [data, setData] = useState({
     siteName: 'Cortexa',
     allowRegistration: true,
-    maxConversations: 50,
+    maxConversations: 10,
     maintenanceMode: false,
     featherlessApiKey: '',
+    hourlyMessageLimit: 30,
+    hourlyConversationLimit: 10,
   });
   
   const [showKey, setShowKey] = useState(false);
@@ -170,17 +172,47 @@ export default function PlatformSettings() {
               </label>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[12px] text-[#6b7280] font-semibold uppercase tracking-wider">Max Conversations (Per User)</label>
-              <div className="flex items-center gap-4">
-                <input 
-                  type="number"
-                  name="maxConversations"
-                  value={data.maxConversations}
-                  onChange={handleChange}
-                  className="w-24 bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-[#f9fafb] focus:border-accent/50 outline-none transition-all"
-                />
-                <p className="text-[12px] text-[#6b7280]">Limit the total number of chats a user can have.</p>
+            <div className="pt-4 space-y-4 border-t border-[#2a2a2a] mt-4">
+              <div className="space-y-1.5">
+                <label className="text-[12px] text-[#6b7280] font-semibold uppercase tracking-wider">Hourly Message Limit</label>
+                <div className="flex items-center gap-4">
+                  <input 
+                    type="number"
+                    name="hourlyMessageLimit"
+                    value={data.hourlyMessageLimit}
+                    onChange={handleChange}
+                    className="w-24 bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-[#f9fafb] focus:border-accent/50 outline-none transition-all"
+                  />
+                  <p className="text-[12px] text-[#6b7280]">How many messages a user can send per hour.</p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[12px] text-[#6b7280] font-semibold uppercase tracking-wider">Hourly New Chat Limit</label>
+                <div className="flex items-center gap-4">
+                  <input 
+                    type="number"
+                    name="hourlyConversationLimit"
+                    value={data.hourlyConversationLimit}
+                    onChange={handleChange}
+                    className="w-24 bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-[#f9fafb] focus:border-accent/50 outline-none transition-all"
+                  />
+                  <p className="text-[12px] text-[#6b7280]">How many new conversations a user can start per hour.</p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[12px] text-[#6b7280] font-semibold uppercase tracking-wider">Total Stored Chats Limit</label>
+                <div className="flex items-center gap-4">
+                  <input 
+                    type="number"
+                    name="maxConversations"
+                    value={data.maxConversations}
+                    onChange={handleChange}
+                    className="w-24 bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-[#f9fafb] focus:border-accent/50 outline-none transition-all"
+                  />
+                  <p className="text-[12px] text-[#6b7280]">Maximum total conversations a user can keep (currently used for logic reference).</p>
+                </div>
               </div>
             </div>
           </div>
