@@ -25,7 +25,7 @@ export async function getModels() {
   return CURATED_MODELS.map(m => ({
     ...m,
     isVision: m.vision,
-    isUncensored: true,
-    isReasoning: false
+    isUncensored: m.tags.includes('uncensored'),
+    isReasoning: m.id.includes('70B') || m.id.includes('103B')
   }));
 }
