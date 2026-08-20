@@ -18,12 +18,12 @@ export const CURATED_MODELS = [
     description: "Uncensored Dolphin model fine-tuned on Mistral NeMo 24B without alignment filters"
   },
   {
-    id: "gryphe/mythomax-l2-13b:free",
+    id: "gryphe/mythomax-l2-13b",
     name: "MythoMax L2 13B",
     size: "13B",
     vision: false,
     supportsTools: false,
-    tags: ["uncensored", "roleplay", "free"],
+    tags: ["uncensored", "roleplay"],
     description: "Popular uncensored creative writing, storytelling, and roleplay model"
   },
   {
