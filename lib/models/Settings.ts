@@ -2,6 +2,10 @@ import { Schema, model, models } from 'mongoose';
 
 const SettingsSchema = new Schema(
   {
+    openrouterApiKey: {
+      type: String,
+      default: '',
+    },
     featherlessApiKey: {
       type: String,
       default: '',
