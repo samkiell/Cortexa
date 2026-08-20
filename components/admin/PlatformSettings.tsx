@@ -23,6 +23,7 @@ export default function PlatformSettings() {
     siteName: 'Cortexa',
     allowRegistration: true,
     maintenanceMode: false,
+    openrouterApiKey: '',
     featherlessApiKey: '',
     hourlyMessageLimit: 30,
     hourlyConversationLimit: 10,
@@ -39,7 +40,10 @@ export default function PlatformSettings() {
         const res = await fetch('/api/admin/settings');
         if (res.ok) {
           const json = await res.json();
-          setData(json);
+          setData({
+            ...json,
+            openrouterApiKey: json.openrouterApiKey || json.featherlessApiKey || '',
+          });
         }
       } catch (err) {
         toast.error('Failed to load settings');
@@ -107,15 +111,15 @@ export default function PlatformSettings() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[12px] text-[#6b7280] font-semibold uppercase tracking-wider">Featherless API Key</label>
+              <label className="text-[12px] text-[#6b7280] font-semibold uppercase tracking-wider">OpenRouter API Key</label>
               <div className="relative">
                 <input
                   type={showKey ? 'text' : 'password'}
-                  name="featherlessApiKey"
-                  value={data.featherlessApiKey}
+                  name="openrouterApiKey"
+                  value={data.openrouterApiKey}
                   onChange={handleChange}
                   className="w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-[#f9fafb] focus:border-accent/50 outline-none transition-all"
-                  placeholder="v1_sk-••••••••••••"
+                  placeholder="sk-or-v1-••••••••••••"
                 />
                 <button 
                   type="button"
