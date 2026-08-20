@@ -18,7 +18,8 @@ export async function GET() {
       settings = await Settings.create({});
     }
 
-    const decryptedKey = decrypt(settings.featherlessApiKey || '');
+    const rawKey = settings.openrouterApiKey || settings.featherlessApiKey || '';
+    const decryptedKey = decrypt(rawKey);
     const maskedKey = decryptedKey 
       ? '••••••••••••' + (decryptedKey.slice(-4)) 
       : '';
@@ -29,6 +30,7 @@ export async function GET() {
       maintenanceMode: settings.maintenanceMode,
       hourlyMessageLimit: settings.hourlyMessageLimit || 30,
       hourlyConversationLimit: settings.hourlyConversationLimit || 10,
+      openrouterApiKey: maskedKey,
       featherlessApiKey: maskedKey,
       visibleModels: settings.visibleModels,
       globalSystemPrompt: settings.globalSystemPrompt || '',
@@ -58,9 +60,12 @@ export async function PUT(req: Request) {
       hourlyConversationLimit: data.hourlyConversationLimit,
     };
 
-    // Only update API key if it's not the masked one
-    if (data.featherlessApiKey && !data.featherlessApiKey.startsWith('••••')) {
-      update.featherlessApiKey = encrypt(data.featherlessApiKey);
+    // Handle OpenRouter API key update
+    const newApiKey = data.openrouterApiKey || data.featherlessApiKey;
+    if (newApiKey && !newApiKey.startsWith('••••')) {
+      const encryptedKey = encrypt(newApiKey);
+      update.openrouterApiKey = encryptedKey;
+      update.featherlessApiKey = encryptedKey;
     }
 
     if (data.visibleModels !== undefined) {
