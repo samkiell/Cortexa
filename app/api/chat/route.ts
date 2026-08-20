@@ -7,7 +7,7 @@ import Settings from '@/lib/models/Settings';
 import User from '@/lib/models/User';
 import RateLimit from '@/lib/models/RateLimit';
 import { webSearch } from '@/lib/search';
-import { CURATED_MODELS } from '@/lib/featherless';
+import { CURATED_MODELS } from '@/lib/openrouter';
 import { startOfHour } from 'date-fns';
 import { decrypt } from '@/lib/crypto';
 import Usage from '@/lib/models/Usage';
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     }
 
     const settings = await Settings.findOne();
-    const apiKeyRaw = settings?.featherlessApiKey || process.env.FEATHERLESS_API_KEY;
+    const apiKeyRaw = settings?.openrouterApiKey || settings?.featherlessApiKey || process.env.OPENROUTER_API_KEY || process.env.FEATHERLESS_API_KEY;
 
     // Use decryption if apiKey from DB is encrypted
     let apiKey = apiKeyRaw;
@@ -93,7 +93,11 @@ export async function POST(req: Request) {
 
     const openai = new OpenAI({
       apiKey,
-      baseURL: 'https://api.featherless.ai/v1',
+      baseURL: 'https://openrouter.ai/api/v1',
+      defaultHeaders: {
+        'HTTP-Referer': 'https://cortexa.ai',
+        'X-Title': 'Cortexa',
+      },
     });
 
     const modelInfo = CURATED_MODELS.find(m => m.id === modelId);
@@ -294,7 +298,7 @@ export async function POST(req: Request) {
         },
       });
     } catch (apiError: any) {
-      console.error('Featherless API Error:', apiError);
+      console.error('OpenRouter API Error:', apiError);
       return NextResponse.json({ 
         error: apiError.error || apiError.message || 'Error from AI provider. Please try again later.' 
       }, { status: 500 });
