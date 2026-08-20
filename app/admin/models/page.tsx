@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CURATED_MODELS } from '@/lib/openrouter';
+import { CURATED_MODELS } from '@/lib/venice';
 import { 
   Loader2, 
   Sliders, 
@@ -47,7 +47,7 @@ export default function ModelVisibilityPage() {
       const libraryRes = await fetch('/api/admin/models/fetch');
       if (libraryRes.ok) {
         const libraryData = await libraryRes.json();
-        // OpenRouter returns { data: [...] }
+        // Venice AI returns { data: [...] }
         setAllModels(libraryData.data || []);
       }
     } catch (err) {
@@ -279,7 +279,7 @@ export default function ModelVisibilityPage() {
               <Plus className="h-5 w-5 text-accent" />
               Model Library
             </h2>
-            <p className="text-[#6b7280] text-[13px]">Explore and enable thousands of models directly from OpenRouter.</p>
+            <p className="text-[#6b7280] text-[13px]">Explore and enable models directly from Venice AI.</p>
           </div>
           <div className="relative w-full md:w-[400px]">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4b5563]" />
@@ -296,11 +296,11 @@ export default function ModelVisibilityPage() {
         {isFetchingLibrary ? (
           <div className="flex flex-col items-center justify-center py-20 bg-[#0d0d0d] rounded-3xl border border-dashed border-[#1a1a1a]">
             <Loader2 className="h-8 w-8 animate-spin text-[#333] mb-3" />
-            <p className="text-[#6b7280] text-sm">Syncing with OpenRouter repository...</p>
+            <p className="text-[#6b7280] text-sm">Syncing with Venice AI repository...</p>
           </div>
         ) : allModels.length === 0 && !isFetchingLibrary ? (
           <div className="flex flex-col items-center justify-center py-20 bg-[#0d0d0d] rounded-3xl border border-dashed border-red-500/20">
-            <p className="text-red-500 text-sm font-medium mb-2">Failed to connect to OpenRouter</p>
+            <p className="text-red-500 text-sm font-medium mb-2">Failed to connect to Venice AI</p>
             <p className="text-[#4b4b4b] text-[12px] max-w-[300px] text-center mb-6">Make sure your API key is correct in Platform Settings.</p>
             <button 
               onClick={fetchData}
