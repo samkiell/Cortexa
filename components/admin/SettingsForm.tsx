@@ -100,7 +100,7 @@ export default function SettingsForm({ initialData, initialModels = [] }: Settin
       <section className="rounded-2xl border border-border-custom bg-surface p-8">
         <div className="flex items-center gap-3 mb-6">
           <Key className="h-6 w-6 text-accent" />
-          <h2 className="font-syne text-xl font-bold text-white tracking-tight">Venice AI API Configuration</h2>
+          <h2 className="font-syne text-xl font-bold text-white tracking-tight">OpenRouter API Configuration</h2>
         </div>
         
         <div className="space-y-4">
@@ -111,7 +111,7 @@ export default function SettingsForm({ initialData, initialModels = [] }: Settin
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               className="w-full rounded-xl border border-border-custom bg-base py-3 pl-4 pr-12 text-sm text-white outline-none focus:border-accent transition-all"
-              placeholder="••••••••••••"
+              placeholder="sk-or-v1-..."
             />
             <button 
               onClick={() => setShowKey(!showKey)}
