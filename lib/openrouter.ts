@@ -1,5 +1,14 @@
 export const CURATED_MODELS = [
   {
+    id: "meta-llama/llama-3.3-70b-instruct",
+    name: "Llama 3.3 70B Instruct",
+    size: "70B",
+    vision: false,
+    supportsTools: true,
+    tags: ["flagship", "powerful"],
+    description: "Flagship 70B open weights model with state-of-the-art reasoning and knowledge"
+  },
+  {
     id: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
     name: "Dolphin Mistral 24B (Venice)",
     size: "24B",
