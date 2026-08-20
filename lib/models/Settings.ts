@@ -2,6 +2,10 @@ import { Schema, model, models } from 'mongoose';
 
 const SettingsSchema = new Schema(
   {
+    veniceApiKey: {
+      type: String,
+      default: '',
+    },
     openrouterApiKey: {
       type: String,
       default: '',
