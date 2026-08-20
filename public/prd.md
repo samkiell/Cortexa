@@ -1,12 +1,12 @@
 # PRD — Cortexa Chat Platform
 
 ## Overview
-A personal-use AI chat web application powered by the Featherless AI API. Users can chat with thousands of open-source and uncensored models through a sleek, dark-themed interface. The platform supports text and image (vision) input, conversation history, model selection, user authentication, and an admin dashboard.
+A personal-use AI chat web application powered by the OpenRouter AI API. Users can chat with thousands of open-source and uncensored models through a sleek, dark-themed interface. The platform supports text and image (vision) input, conversation history, model selection, user authentication, and an admin dashboard.
 
 ---
 
 ## Goals
-- Access any Featherless-hosted model through a single polished UI
+- Access any OpenRouter-hosted model through a single polished UI
 - Persist chat history per user in MongoDB
 - Support multimodal input (text + image uploads for vision-capable models)
 - Allow sharing access with other users via auth
@@ -24,7 +24,7 @@ A personal-use AI chat web application powered by the Featherless AI API. Users 
 | Toasts | Sonner |
 | Database | MongoDB (via Mongoose) |
 | Auth | NextAuth.js (credentials provider) |
-| AI API | Featherless AI (OpenAI-compatible) |
+| AI API | OpenRouter (OpenAI-compatible) |
 | Deployment | Vercel |
 
 ---
@@ -77,7 +77,7 @@ A personal-use AI chat web application powered by the Featherless AI API. Users 
 - Regenerate last response button
 
 ### 3. Model Selector
-- Fetches model list from Featherless `/v1/models` endpoint
+- Fetches model list from OpenRouter `/api/v1/models` endpoint
 - Admin can toggle which models are visible to users
 - Badges: `vision`, `uncensored`, `abliterated`, `reasoning`
 - Search/filter by name
@@ -90,7 +90,7 @@ A personal-use AI chat web application powered by the Featherless AI API. Users 
 - Delete conversation
 
 ### 5. Admin Panel
-- Set/update Featherless API key (stored encrypted in DB)
+- Set/update OpenRouter API key (stored encrypted in DB)
 - Toggle model visibility (whitelist which models users can select)
 - View all users, change roles, deactivate accounts
 - Basic usage stats (total messages, active users)
@@ -113,10 +113,15 @@ A personal-use AI chat web application powered by the Featherless AI API. Users 
 }
 ```
 
-### Settings (admin, singleton)
-```
+### Settings (`Settings.ts`)
+```ts
 {
-  featherlessApiKey, visibleModels: [string], updatedAt
+  openrouterApiKey: String (encrypted, optional),
+  featherlessApiKey: String (encrypted, optional, legacy),
+  visibleModels: [String],
+  siteName: String (default: 'Cortexa'),
+  allowRegistration: Boolean (default: true),
+  updatedAt: Date
 }
 ```
 
@@ -153,7 +158,7 @@ A personal-use AI chat web application powered by the Featherless AI API. Users 
 ---
 
 ## Non-Functional Requirements
-- API key never exposed to client (all Featherless calls go through `/api/chat`)
+- API key never exposed to client (all OpenRouter calls go through `/api/chat`)
 - Vision image uploads validated for size (max 5MB) and type (jpeg, png, webp)
 - Admin route middleware checks role from JWT
 - Mobile responsive (sidebar collapses to drawer on small screens)
