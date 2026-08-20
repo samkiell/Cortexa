@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { CURATED_MODELS } from '@/lib/openrouter';
+import { CURATED_MODELS } from '@/lib/venice';
+import dbConnect from '@/lib/db';
+import Settings from '@/lib/models/Settings';
+import { decrypt } from '@/lib/crypto';
 
 export async function GET() {
   try {
@@ -10,38 +13,38 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Goal: Fetch the full catalog from the public web API (Unauthenticated)
-    // Fallback: Use curated models if catalog is unreachable or returns 404
+    await dbConnect();
+    const settings = await Settings.findOne();
+    const apiKeyRaw = settings?.veniceApiKey || settings?.openrouterApiKey || settings?.featherlessApiKey || process.env.VENICE_API_KEY || process.env.OPENROUTER_API_KEY || process.env.FEATHERLESS_API_KEY;
+    let apiKey = apiKeyRaw;
+    if (apiKeyRaw && apiKeyRaw.includes(':')) {
+      apiKey = decrypt(apiKeyRaw);
+    }
+
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/models', {
-        headers: {
-          'Accept': 'application/json',
-        },
+      const headers: Record<string, string> = {
+        'Accept': 'application/json',
+      };
+      if (apiKey) {
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      }
+
+      const response = await fetch('https://api.venice.ai/api/v1/models', {
+        headers,
         next: { revalidate: 3600 } // Cache results for 1 hour
       });
 
       if (response.ok) {
         const data = await response.json();
-        // OpenRouter catalog API returns { data: [...] }
         const models = Array.isArray(data) ? data : (data.data || []);
         
-        // Filter to uncensored or free models only
-        const filteredModels = models.filter((m: any) => {
-          const isFree = m.id?.endsWith(':free') || (m.pricing?.prompt === '0' && m.pricing?.completion === '0');
-          const isUncensored = /dolphin|venice|uncensored|abliterat|heretic|mythomax|cydonia|fimbulvetr|remm|rogue|slerp/i.test(
-            `${m.id} ${m.name || ''} ${m.description || ''}`
-          );
-          const isCurated = CURATED_MODELS.some(cm => cm.id === m.id);
-          return isFree || isUncensored || isCurated;
-        });
-
-        if (filteredModels.length > 0) {
-          console.log(`Successfully synced ${filteredModels.length} free/uncensored models from OpenRouter catalog.`);
-          return NextResponse.json({ data: filteredModels });
+        if (models.length > 0) {
+          console.log(`Successfully synced ${models.length} models from Venice AI catalog.`);
+          return NextResponse.json({ data: models });
         }
       }
     } catch (apiErr: any) {
-      console.error('OpenRouter catalog sync failed:', apiErr.message);
+      console.error('Venice AI catalog sync failed:', apiErr.message);
     }
 
     // Silent Fallback: Always return at least the curated list to prevent UI breakage
