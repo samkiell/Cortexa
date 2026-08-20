@@ -23,6 +23,7 @@ export default function PlatformSettings() {
     siteName: 'Cortexa',
     allowRegistration: true,
     maintenanceMode: false,
+    veniceApiKey: '',
     openrouterApiKey: '',
     featherlessApiKey: '',
     hourlyMessageLimit: 30,
@@ -42,7 +43,7 @@ export default function PlatformSettings() {
           const json = await res.json();
           setData({
             ...json,
-            openrouterApiKey: json.openrouterApiKey || json.featherlessApiKey || '',
+            veniceApiKey: json.veniceApiKey || json.openrouterApiKey || json.featherlessApiKey || '',
           });
         }
       } catch (err) {
@@ -111,15 +112,15 @@ export default function PlatformSettings() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[12px] text-[#6b7280] font-semibold uppercase tracking-wider">OpenRouter API Key</label>
+              <label className="text-[12px] text-[#6b7280] font-semibold uppercase tracking-wider">Venice AI API Key</label>
               <div className="relative">
                 <input
                   type={showKey ? 'text' : 'password'}
-                  name="openrouterApiKey"
-                  value={data.openrouterApiKey}
+                  name="veniceApiKey"
+                  value={data.veniceApiKey}
                   onChange={handleChange}
                   className="w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-[#f9fafb] focus:border-accent/50 outline-none transition-all"
-                  placeholder="sk-or-v1-••••••••••••"
+                  placeholder="••••••••••••"
                 />
                 <button 
                   type="button"
