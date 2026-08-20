@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Model } from '@/lib/openrouter';
+import { Model } from '@/lib/venice';
 
 interface ModelContextType {
   models: Model[];
