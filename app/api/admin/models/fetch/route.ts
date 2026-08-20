@@ -25,9 +25,18 @@ export async function GET() {
         // OpenRouter catalog API returns { data: [...] }
         const models = Array.isArray(data) ? data : (data.data || []);
         
-        if (models.length > 0) {
-          console.log(`Successfully synced ${models.length} models from OpenRouter catalog.`);
-          return NextResponse.json({ data: models });
+        // Filter to uncensored or free models only
+        const filteredModels = models.filter((m: any) => {
+          const isFree = m.id?.endsWith(':free') || (m.pricing?.prompt === '0' && m.pricing?.completion === '0');
+          const isUncensored = /dolphin|venice|uncensored|abliterat|heretic|mythomax|cydonia|fimbulvetr|remm|rogue|slerp/i.test(
+            `${m.id} ${m.name || ''} ${m.description || ''}`
+          );
+          return isFree || isUncensored;
+        });
+
+        if (filteredModels.length > 0) {
+          console.log(`Successfully synced ${filteredModels.length} free/uncensored models from OpenRouter catalog.`);
+          return NextResponse.json({ data: filteredModels });
         }
       }
     } catch (apiErr: any) {
