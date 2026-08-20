@@ -18,7 +18,7 @@ export async function GET() {
       settings = await Settings.create({});
     }
 
-    const rawKey = settings.veniceApiKey || settings.openrouterApiKey || settings.featherlessApiKey || '';
+    const rawKey = settings.openrouterApiKey || settings.veniceApiKey || settings.featherlessApiKey || '';
     const decryptedKey = decrypt(rawKey);
     const maskedKey = decryptedKey 
       ? '••••••••••••' + (decryptedKey.slice(-4)) 
@@ -30,8 +30,8 @@ export async function GET() {
       maintenanceMode: settings.maintenanceMode,
       hourlyMessageLimit: settings.hourlyMessageLimit || 30,
       hourlyConversationLimit: settings.hourlyConversationLimit || 10,
-      veniceApiKey: maskedKey,
       openrouterApiKey: maskedKey,
+      veniceApiKey: maskedKey,
       featherlessApiKey: maskedKey,
       visibleModels: settings.visibleModels,
       globalSystemPrompt: settings.globalSystemPrompt || '',
@@ -61,12 +61,12 @@ export async function PUT(req: Request) {
       hourlyConversationLimit: data.hourlyConversationLimit,
     };
 
-    // Handle Venice API key update
-    const newApiKey = data.veniceApiKey || data.openrouterApiKey || data.featherlessApiKey;
+    // Handle OpenRouter API key update
+    const newApiKey = data.openrouterApiKey || data.veniceApiKey || data.featherlessApiKey;
     if (newApiKey && !newApiKey.startsWith('••••')) {
       const encryptedKey = encrypt(newApiKey);
-      update.veniceApiKey = encryptedKey;
       update.openrouterApiKey = encryptedKey;
+      update.veniceApiKey = encryptedKey;
       update.featherlessApiKey = encryptedKey;
     }
 
