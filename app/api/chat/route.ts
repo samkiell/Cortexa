@@ -101,13 +101,14 @@ export async function POST(req: Request) {
     });
 
     const modelInfo = CURATED_MODELS.find(m => m.id === modelId);
-    if (!modelInfo) {
+    const isCustomAllowed = settings?.visibleModels?.includes(modelId);
+    if (!modelInfo && !isCustomAllowed) {
       console.error(`Model not found: ${modelId}`);
       return NextResponse.json({ error: 'Selected model is not available.' }, { status: 400 });
     }
 
-    const isVisionModel = modelInfo.vision || false;
-    const supportsTools = modelInfo.supportsTools || false;
+    const isVisionModel = modelInfo?.vision || false;
+    const supportsTools = modelInfo?.supportsTools ?? true;
     let canSearch = searchEnabled && supportsTools;
 
     const globalPrompt = settings?.globalSystemPrompt;
