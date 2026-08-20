@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SquarePen, ArrowDown, Menu, PanelLeft, AlertCircle } from 'lucide-react';
+import { SquarePen, ArrowDown, Menu, PanelLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSidebar } from '@/components/providers/SidebarProvider';
 import { useModels } from '@/contexts/ModelContext';
@@ -549,14 +549,6 @@ export default function ChatInterface({
           <SquarePen className="h-[18px] w-[18px]" />
         </button>
       </header>
-
-      {/* Maintenance Notice */}
-      <div className="max-w-[680px] mx-auto w-full px-4 pt-1 pb-2 shrink-0 z-30">
-        <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[12px] leading-relaxed shadow-sm">
-          <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />
-          <span>Uncensored models are currently unavailable due to maintenance. Normal models are available so you can still chat safely.</span>
-        </div>
-      </div>
 
       <div 
         ref={scrollAreaRef}
