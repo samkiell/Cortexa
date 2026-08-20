@@ -48,10 +48,15 @@ export default function ModelSelector({ currentModel, onSelect }: ModelSelectorP
             exit={{ opacity: 0, scaleY: 0 }}
             transition={{ duration: 0.12 }}
             style={{ originY: 0 }}
-            className="absolute left-0 mt-2 w-64 overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] shadow-xl z-50 p-1"
+            className="absolute left-0 mt-2 w-72 overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] shadow-xl z-50 p-2"
           >
-            <div className="space-y-0.5">
-              {models.slice(0, 5).map((model) => {
+            {/* Notice Banner */}
+            <div className="mb-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] leading-snug">
+              Uncensored models are currently unavailable due to maintenance. Normal models are available so you can still chat safely.
+            </div>
+
+            <div className="space-y-0.5 max-h-60 overflow-y-auto">
+              {models.map((model) => {
                 const isActive = currentModel === model.id;
                 return (
                   <button
@@ -71,13 +76,16 @@ export default function ModelSelector({ currentModel, onSelect }: ModelSelectorP
                           {model.vision && (
                             <span className="px-1 py-0.5 rounded-[4px] bg-[#3b82f6]/10 text-[#3b82f6] text-[9px] font-bold uppercase tracking-tighter">Vision</span>
                           )}
-                          {model.tags.includes('uncensored') && (
-                            <span className="px-1 py-0.5 rounded-[4px] bg-[#3b82f6]/10 text-[#3b82f6] text-[9px] font-bold uppercase tracking-tighter">Ghost</span>
+                          {model.tags?.includes('free') && (
+                            <span className="px-1 py-0.5 rounded-[4px] bg-emerald-500/10 text-emerald-400 text-[9px] font-bold uppercase tracking-tighter">Free</span>
                           )}
                         </div>
                       </div>
+                      {model.description && (
+                        <span className="text-[11px] text-[#6b7280] truncate mt-0.5">{model.description}</span>
+                      )}
                     </div>
-                    {isActive && <Check className="h-3.5 w-3.5 text-[#3b82f6]" />}
+                    {isActive && <Check className="h-3.5 w-3.5 text-[#3b82f6] shrink-0 ml-2" />}
                   </button>
                 );
               })}
