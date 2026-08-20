@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Model } from '@/lib/featherless';
+import { Model } from '@/lib/openrouter';
 
 interface ModelContextType {
   models: Model[];
