@@ -7,7 +7,7 @@ import Settings from '@/lib/models/Settings';
 import User from '@/lib/models/User';
 import RateLimit from '@/lib/models/RateLimit';
 import { webSearch } from '@/lib/search';
-import { CURATED_MODELS } from '@/lib/openrouter';
+import { CURATED_MODELS } from '@/lib/venice';
 import { startOfHour } from 'date-fns';
 import { decrypt } from '@/lib/crypto';
 import Usage from '@/lib/models/Usage';
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     }
 
     const settings = await Settings.findOne();
-    const apiKeyRaw = settings?.openrouterApiKey || settings?.featherlessApiKey || process.env.OPENROUTER_API_KEY || process.env.FEATHERLESS_API_KEY;
+    const apiKeyRaw = settings?.veniceApiKey || settings?.openrouterApiKey || settings?.featherlessApiKey || process.env.VENICE_API_KEY || process.env.OPENROUTER_API_KEY || process.env.FEATHERLESS_API_KEY;
 
     // Use decryption if apiKey from DB is encrypted
     let apiKey = apiKeyRaw;
@@ -93,11 +93,7 @@ export async function POST(req: Request) {
 
     const openai = new OpenAI({
       apiKey,
-      baseURL: 'https://openrouter.ai/api/v1',
-      defaultHeaders: {
-        'HTTP-Referer': 'https://cortexa.ai',
-        'X-Title': 'Cortexa',
-      },
+      baseURL: 'https://api.venice.ai/api/v1',
     });
 
     const modelInfo = CURATED_MODELS.find(m => m.id === modelId);
@@ -299,7 +295,7 @@ export async function POST(req: Request) {
         },
       });
     } catch (apiError: any) {
-      console.error('OpenRouter API Error:', apiError);
+      console.error('Venice AI API Error:', apiError);
       return NextResponse.json({ 
         error: apiError.error || apiError.message || 'Error from AI provider. Please try again later.' 
       }, { status: 500 });
