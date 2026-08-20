@@ -20,7 +20,7 @@ interface SettingsFormProps {
 }
 
 export default function SettingsForm({ initialData, initialModels = [] }: SettingsFormProps) {
-  const [apiKey, setApiKey] = useState(initialData?.featherlessApiKey || '');
+  const [apiKey, setApiKey] = useState(initialData?.openrouterApiKey || initialData?.featherlessApiKey || '');
   const [showKey, setShowKey] = useState(false);
   const [models, setModels] = useState<any[]>(initialModels);
   const [visibleModels, setVisibleModels] = useState<string[]>(initialData?.visibleModels || []);
@@ -41,7 +41,7 @@ export default function SettingsForm({ initialData, initialModels = [] }: Settin
 
         if (settingsRes.ok) {
           const settings = await settingsRes.json();
-          setApiKey(settings.featherlessApiKey || '');
+          setApiKey(settings.openrouterApiKey || settings.featherlessApiKey || '');
           setVisibleModels(settings.visibleModels || []);
         }
 
@@ -65,6 +65,7 @@ export default function SettingsForm({ initialData, initialModels = [] }: Settin
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          openrouterApiKey: apiKey,
           featherlessApiKey: apiKey,
           visibleModels,
         }),
@@ -98,7 +99,7 @@ export default function SettingsForm({ initialData, initialModels = [] }: Settin
       <section className="rounded-2xl border border-border-custom bg-surface p-8">
         <div className="flex items-center gap-3 mb-6">
           <Key className="h-6 w-6 text-accent" />
-          <h2 className="font-syne text-xl font-bold text-white tracking-tight">Featherless API Configuration</h2>
+          <h2 className="font-syne text-xl font-bold text-white tracking-tight">OpenRouter API Configuration</h2>
         </div>
         
         <div className="space-y-4">
@@ -109,7 +110,7 @@ export default function SettingsForm({ initialData, initialModels = [] }: Settin
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               className="w-full rounded-xl border border-border-custom bg-base py-3 pl-4 pr-12 text-sm text-white outline-none focus:border-accent transition-all"
-              placeholder="v1_sk-..."
+              placeholder="sk-or-v1-..."
             />
             <button 
               onClick={() => setShowKey(!showKey)}
