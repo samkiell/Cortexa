@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { CURATED_MODELS } from '@/lib/openrouter';
+import { CURATED_MODELS } from '@/lib/venice';
 import dbConnect from '@/lib/db';
 import Settings from '@/lib/models/Settings';
 
