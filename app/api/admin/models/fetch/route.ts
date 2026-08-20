@@ -31,7 +31,8 @@ export async function GET() {
           const isUncensored = /dolphin|venice|uncensored|abliterat|heretic|mythomax|cydonia|fimbulvetr|remm|rogue|slerp/i.test(
             `${m.id} ${m.name || ''} ${m.description || ''}`
           );
-          return isFree || isUncensored;
+          const isCurated = CURATED_MODELS.some(cm => cm.id === m.id);
+          return isFree || isUncensored || isCurated;
         });
 
         if (filteredModels.length > 0) {
