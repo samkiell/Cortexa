@@ -29,7 +29,7 @@ export default function LandingPage() {
             >
               <div className="inline-flex items-center rounded-full border border-white/[0.08] px-3 py-1 mb-6">
                 <span className="font-mono text-[9px] uppercase tracking-widest text-white/40">
-                  Powered by OpenRouter
+                  Powered by Venice AI
                 </span>
               </div>
               
