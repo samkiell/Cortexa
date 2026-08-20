@@ -9,13 +9,13 @@ export const CURATED_MODELS = [
     description: "Massive 550B MoE frontier reasoning and orchestration model from NVIDIA"
   },
   {
-    id: "google/gemma-4-31b-it:free",
-    name: "Gemma 4 31B",
-    size: "31B",
+    id: "google/gemma-4-26b-a4b-it:free",
+    name: "Gemma 4 26B",
+    size: "26B",
     vision: true,
     supportsTools: true,
     tags: ["free", "vision", "multimodal"],
-    description: "Google DeepMind dense multimodal model supporting text and vision input"
+    description: "Google DeepMind multimodal instruction model with vision input support"
   },
   {
     id: "poolside/laguna-s-2.1:free",
@@ -25,6 +25,24 @@ export const CURATED_MODELS = [
     supportsTools: true,
     tags: ["free", "coding", "agent"],
     description: "118B parameter coding agent model from Poolside"
+  },
+  {
+    id: "openai/gpt-oss-20b:free",
+    name: "GPT-OSS 20B",
+    size: "20B",
+    vision: false,
+    supportsTools: true,
+    tags: ["free", "openai", "general"],
+    description: "Open-source general purpose model from OpenAI"
+  },
+  {
+    id: "nvidia/nemotron-3.5-lightning:free",
+    name: "Nemotron 3.5 Lightning",
+    size: "Fast",
+    vision: false,
+    supportsTools: true,
+    tags: ["free", "fast", "speed"],
+    description: "Ultra high-speed lightweight inference model from NVIDIA"
   },
   {
     id: "openrouter/free",
