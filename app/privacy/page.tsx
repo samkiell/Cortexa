@@ -36,7 +36,7 @@ export default function PrivacyPage() {
               <section className="space-y-3">
                 <h2 className="text-[14px] font-medium text-white uppercase tracking-wider">How We Use Data</h2>
                 <p>
-                  Your data is used solely to provide and improve the Cortexa experience. We do not sell your personal information to third parties. Conversations are processed by our AI partners (like Featherless AI) to generate responses.
+                  Your data is used solely to provide and improve the Cortexa experience. We do not sell your personal information to third parties. Conversations are processed by our AI partners (like OpenRouter) to generate responses.
                 </p>
               </section>
 
