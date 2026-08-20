@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronDown, 
   Check,
+  AlertCircle
 } from 'lucide-react';
 import { useModels } from '@/contexts/ModelContext';
 
@@ -51,8 +52,9 @@ export default function ModelSelector({ currentModel, onSelect }: ModelSelectorP
             className="absolute left-0 mt-2 w-72 overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] shadow-xl z-50 p-2"
           >
             {/* Notice Banner */}
-            <div className="mb-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] leading-snug">
-              Uncensored models are currently unavailable due to maintenance. Normal models are available so you can still chat safely.
+            <div className="mb-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] leading-relaxed flex items-start gap-2">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-400 mt-0.5" />
+              <span>Uncensored models are currently unavailable due to maintenance. Normal models are available so you can still chat safely.</span>
             </div>
 
             <div className="space-y-0.5 max-h-60 overflow-y-auto">
