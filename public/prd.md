@@ -1,12 +1,12 @@
 # PRD — Cortexa Chat Platform
 
 ## Overview
-A personal-use AI chat web application powered by the Venice AI API. Users can chat with uncensored, privacy-focused open-source models through a sleek, dark-themed interface. The platform supports text and image (vision) input, conversation history, model selection, user authentication, and an admin dashboard.
+A personal-use AI chat web application powered by OpenRouter. Users can chat with open-source models through a sleek, dark-themed interface. The platform supports text and image (vision) input, conversation history, model selection, user authentication, and an admin dashboard.
 
 ---
 
 ## Goals
-- Access Venice AI uncensored models through a single polished UI
+- Access free open-source models on OpenRouter through a single polished UI
 - Persist chat history per user in MongoDB
 - Support multimodal input (text + image uploads for vision-capable models)
 - Allow sharing access with other users via auth
@@ -24,7 +24,7 @@ A personal-use AI chat web application powered by the Venice AI API. Users can c
 | Toasts | Sonner |
 | Database | MongoDB (via Mongoose) |
 | Auth | NextAuth.js (credentials provider) |
-| AI API | Venice AI (OpenAI-compatible) |
+| AI API | OpenRouter (OpenAI-compatible) |
 | Deployment | Vercel |
 
 ---
@@ -77,9 +77,9 @@ A personal-use AI chat web application powered by the Venice AI API. Users can c
 - Regenerate last response button
 
 ### 3. Model Selector
-- Fetches model list from Venice AI `/api/v1/models` endpoint
+- Fetches model list from OpenRouter `/api/v1/models` endpoint
 - Admin can toggle which models are visible to users
-- Badges: `vision`, `uncensored`, `abliterated`, `reasoning`
+- Badges: `vision`, `free`, `reasoning`
 - Search/filter by name
 
 ### 4. Conversation History
@@ -90,7 +90,7 @@ A personal-use AI chat web application powered by the Venice AI API. Users can c
 - Delete conversation
 
 ### 5. Admin Panel
-- Set/update Venice AI API key (stored encrypted in DB)
+- Set/update OpenRouter API key (stored encrypted in DB)
 - Toggle model visibility (whitelist which models users can select)
 - View all users, change roles, deactivate accounts
 - Basic usage stats (total messages, active users)
@@ -116,8 +116,8 @@ A personal-use AI chat web application powered by the Venice AI API. Users can c
 ### Settings (`Settings.ts`)
 ```ts
 {
-  veniceApiKey: String (encrypted, optional),
-  openrouterApiKey: String (encrypted, optional, legacy),
+  openrouterApiKey: String (encrypted, optional),
+  veniceApiKey: String (encrypted, optional, legacy),
   featherlessApiKey: String (encrypted, optional, legacy),
   visibleModels: [String],
   siteName: String (default: 'Cortexa'),
@@ -159,7 +159,7 @@ A personal-use AI chat web application powered by the Venice AI API. Users can c
 ---
 
 ## Non-Functional Requirements
-- API key never exposed to client (all Venice AI calls go through `/api/chat`)
+- API key never exposed to client (all OpenRouter calls go through `/api/chat`)
 - Vision image uploads validated for size (max 5MB) and type (jpeg, png, webp)
 - Admin route middleware checks role from JWT
 - Mobile responsive (sidebar collapses to drawer on small screens)
