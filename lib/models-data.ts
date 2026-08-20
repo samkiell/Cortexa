@@ -1,6 +1,6 @@
 import dbConnect from '@/lib/db';
 import Settings from '@/lib/models/Settings';
-import { CURATED_MODELS } from './openrouter';
+import { CURATED_MODELS } from './venice';
 
 export async function getSettings() {
   try {
@@ -8,6 +8,7 @@ export async function getSettings() {
     let settings = await Settings.findOne();
     if (!settings) {
       settings = await Settings.create({
+        veniceApiKey: '',
         openrouterApiKey: '',
         featherlessApiKey: '',
         visibleModels: [],
@@ -25,7 +26,7 @@ export async function getModels() {
   return CURATED_MODELS.map(m => ({
     ...m,
     isVision: m.vision,
-    isUncensored: m.tags.includes('uncensored') || m.tags.includes('open-weights'),
-    isReasoning: m.tags.includes('reasoning') || m.id.includes('ultra') || m.id.includes('super')
+    isUncensored: m.tags.includes('uncensored'),
+    isReasoning: m.tags.includes('reasoning') || m.id.includes('70b') || m.id.includes('72b')
   }));
 }
