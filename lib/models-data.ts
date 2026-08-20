@@ -1,6 +1,6 @@
 import dbConnect from '@/lib/db';
 import Settings from '@/lib/models/Settings';
-import { CURATED_MODELS } from './featherless';
+import { CURATED_MODELS } from './openrouter';
 
 export async function getSettings() {
   try {
@@ -8,6 +8,7 @@ export async function getSettings() {
     let settings = await Settings.findOne();
     if (!settings) {
       settings = await Settings.create({
+        openrouterApiKey: '',
         featherlessApiKey: '',
         visibleModels: [],
       });
@@ -25,6 +26,6 @@ export async function getModels() {
     ...m,
     isVision: m.vision,
     isUncensored: m.tags.includes('uncensored'),
-    isReasoning: m.id.includes('72B') || m.id.includes('70B')
+    isReasoning: m.id.includes('72B') || m.id.includes('70B') || m.id.includes('r1')
   }));
 }
