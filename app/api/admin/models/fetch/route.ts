@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { CURATED_MODELS } from '@/lib/venice';
-import dbConnect from '@/lib/db';
-import Settings from '@/lib/models/Settings';
-import { decrypt } from '@/lib/crypto';
+import { CURATED_MODELS } from '@/lib/openrouter';
 
 export async function GET() {
   try {
@@ -13,24 +10,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await dbConnect();
-    const settings = await Settings.findOne();
-    const apiKeyRaw = settings?.veniceApiKey || settings?.openrouterApiKey || settings?.featherlessApiKey || process.env.VENICE_API_KEY || process.env.OPENROUTER_API_KEY || process.env.FEATHERLESS_API_KEY;
-    let apiKey = apiKeyRaw;
-    if (apiKeyRaw && apiKeyRaw.includes(':')) {
-      apiKey = decrypt(apiKeyRaw);
-    }
-
     try {
-      const headers: Record<string, string> = {
-        'Accept': 'application/json',
-      };
-      if (apiKey) {
-        headers['Authorization'] = `Bearer ${apiKey}`;
-      }
-
-      const response = await fetch('https://api.venice.ai/api/v1/models', {
-        headers,
+      const response = await fetch('https://openrouter.ai/api/v1/models', {
+        headers: {
+          'Accept': 'application/json',
+        },
         next: { revalidate: 3600 } // Cache results for 1 hour
       });
 
@@ -38,13 +22,20 @@ export async function GET() {
         const data = await response.json();
         const models = Array.isArray(data) ? data : (data.data || []);
         
-        if (models.length > 0) {
-          console.log(`Successfully synced ${models.length} models from Venice AI catalog.`);
-          return NextResponse.json({ data: models });
+        // Filter to free models or curated models
+        const filteredModels = models.filter((m: any) => {
+          const isFree = m.id?.endsWith(':free') || m.id === 'openrouter/free' || (m.pricing?.prompt === '0' && m.pricing?.completion === '0');
+          const isCurated = CURATED_MODELS.some(cm => cm.id === m.id);
+          return isFree || isCurated;
+        });
+
+        if (filteredModels.length > 0) {
+          console.log(`Successfully synced ${filteredModels.length} free models from OpenRouter catalog.`);
+          return NextResponse.json({ data: filteredModels });
         }
       }
     } catch (apiErr: any) {
-      console.error('Venice AI catalog sync failed:', apiErr.message);
+      console.error('OpenRouter catalog sync failed:', apiErr.message);
     }
 
     // Silent Fallback: Always return at least the curated list to prevent UI breakage
