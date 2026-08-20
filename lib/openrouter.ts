@@ -1,66 +1,93 @@
 export const CURATED_MODELS = [
   {
-    id: "meta-llama/llama-3.3-70b-instruct",
-    name: "Llama 3.3 70B Instruct",
-    size: "70B",
+    id: "openai/gpt-oss-20b:free",
+    name: "GPT-OSS 20B",
+    size: "21B",
     vision: false,
     supportsTools: true,
-    tags: ["flagship", "powerful"],
-    description: "Flagship 70B open weights model with state-of-the-art reasoning and knowledge"
+    tags: ["free", "open-weights", "moe"],
+    description: "OpenAI Apache 2.0 open-weight MoE model with 3.6B active parameters"
   },
   {
-    id: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
-    name: "Dolphin Mistral 24B (Venice)",
-    size: "24B",
+    id: "google/gemma-4-26b-a4b-it:free",
+    name: "Gemma 4 26B A4B",
+    size: "26B",
+    vision: true,
+    supportsTools: true,
+    tags: ["free", "vision", "moe"],
+    description: "Google DeepMind instruction-tuned MoE model with vision and multimodal support"
+  },
+  {
+    id: "nvidia/nemotron-3-ultra-550b-a55b:free",
+    name: "Nemotron 3 Ultra 550B",
+    size: "550B",
     vision: false,
     supportsTools: true,
-    tags: ["uncensored", "dolphin", "free"],
-    description: "Uncensored Dolphin model fine-tuned on Mistral NeMo 24B without alignment filters"
+    tags: ["free", "frontier", "reasoning"],
+    description: "Massive 550B MoE frontier reasoning and orchestration model from NVIDIA"
   },
   {
-    id: "gryphe/mythomax-l2-13b",
-    name: "MythoMax L2 13B",
-    size: "13B",
-    vision: false,
-    supportsTools: false,
-    tags: ["uncensored", "roleplay"],
-    description: "Popular uncensored creative writing, storytelling, and roleplay model"
-  },
-  {
-    id: "thedrummer/cydonia-24b-v4.1:free",
-    name: "Cydonia 24B V4.1",
-    size: "24B",
+    id: "nvidia/nemotron-3-super-120b-a12b:free",
+    name: "Nemotron 3 Super 120B",
+    size: "120B",
     vision: false,
     supportsTools: true,
-    tags: ["uncensored", "heretic", "free"],
-    description: "Uncensored and highly expressive 24B model by TheDrummer"
+    tags: ["free", "reasoning", "moe"],
+    description: "120B hybrid Mamba-Transformer MoE model for high efficiency and accuracy"
   },
   {
-    id: "undi95/remm-slerp-l2-13b:free",
-    name: "ReMM SLERP 13B",
-    size: "13B",
-    vision: false,
-    supportsTools: false,
-    tags: ["uncensored", "roleplay", "free"],
-    description: "Uncensored merge optimized for unrestrained chat and narrative creation"
+    id: "nvidia/nemotron-nano-12b-v2-vl:free",
+    name: "Nemotron Nano 12B VL",
+    size: "12B",
+    vision: true,
+    supportsTools: true,
+    tags: ["free", "vision", "multimodal"],
+    description: "Open multimodal reasoning model for video understanding and document intelligence"
   },
   {
-    id: "sophosympatheia/rogue-rose-103b-v0.2:free",
-    name: "Rogue Rose 103B",
-    size: "103B",
+    id: "cohere/north-mini-code:free",
+    name: "North Mini Code",
+    size: "30B",
     vision: false,
-    supportsTools: false,
-    tags: ["uncensored", "creative", "free"],
-    description: "High-parameter uncensored model for complex creative and roleplay tasks"
+    supportsTools: true,
+    tags: ["free", "coding", "agentic"],
+    description: "Cohere sparse MoE model optimized for agentic coding and technical reasoning"
   },
   {
-    id: "sao10k/fimbulvetr-11b-v2:free",
-    name: "Fimbulvetr 11B v2",
-    size: "11B",
+    id: "dots-studio/dots-3-note-preview:free",
+    name: "Dots 3 Note Preview",
+    size: "280B",
     vision: false,
-    supportsTools: false,
-    tags: ["uncensored", "storytelling", "free"],
-    description: "Uncensored creative writing model with strong prompt adherence"
+    supportsTools: true,
+    tags: ["free", "moe", "preview"],
+    description: "280B MoE model from Dots Studio with 16B active parameters"
+  },
+  {
+    id: "z-ai/glm-5.2:free",
+    name: "GLM 5.2",
+    size: "Reasoning",
+    vision: false,
+    supportsTools: true,
+    tags: ["free", "reasoning", "long-context"],
+    description: "Large-scale reasoning model from Z.ai supporting 1M-token context window"
+  },
+  {
+    id: "liquid/lfm-2.5-2.6b:free",
+    name: "LFM 2.5 2.6B",
+    size: "2.6B",
+    vision: false,
+    supportsTools: true,
+    tags: ["free", "fast", "compact"],
+    description: "Compact reasoning model from Liquid AI suited for RAG and fast chat"
+  },
+  {
+    id: "poolside/laguna-s-2.1:free",
+    name: "Laguna S 2.1",
+    size: "118B",
+    vision: false,
+    supportsTools: true,
+    tags: ["free", "coding", "agent"],
+    description: "118B parameter coding agent model from Poolside"
   }
 ];
 
